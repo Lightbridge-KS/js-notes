@@ -15,7 +15,7 @@ book:
     - part: JS Basic
       chapters: 
       - "content/basic-syntax.ipynb"
-      - "content/datatypes.qmd"
+      - "content/datatypes.ipynb"
       - "content/type.ipynb"
       - "content/variable-declare.qmd"
       - "content/operator-arith.qmd"
