@@ -20,6 +20,7 @@ book:
       - "content/variable-declare.qmd"
       - "content/operator-arith.qmd"
       - "content/operator-comp.qmd"
+      - "content/control-flow.ipynb"
     - part: Package
       chapters: 
         - "content/import.qmd"
