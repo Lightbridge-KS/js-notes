@@ -1,0 +1,101 @@
+# Arithmetic Operators
+
+Here's a comprehensive table of JavaScript's arithmetic operators, along with examples and special behaviors:
+
+| Operator | Name | Description | Example | Result |
+|----------|------|-------------|---------|--------|
+| `+` | Addition | Adds numbers | `5 + 3` | `8` |
+| `-` | Subtraction | Subtracts numbers | `5 - 3` | `2` |
+| `*` | Multiplication | Multiplies numbers | `5 * 3` | `15` |
+| `/` | Division | Divides numbers | `6 / 3` | `2` |
+| `%` | Modulus (Remainder) | Returns the division remainder | `7 % 3` | `1` |
+| `**` | Exponentiation | Raises first operand to power of second | `2 ** 3` | `8` |
+| `++` | Increment | Increases value by 1 | `let x = 5; x++;` | `x` becomes `6` |
+| `--` | Decrement | Decreases value by 1 | `let x = 5; x--;` | `x` becomes `4` |
+| `+=` | Addition assignment | Adds and assigns result | `let x = 5; x += 3;` | `x` becomes `8` |
+| `-=` | Subtraction assignment | Subtracts and assigns result | `let x = 5; x -= 3;` | `x` becomes `2` |
+| `*=` | Multiplication assignment | Multiplies and assigns result | `let x = 5; x *= 3;` | `x` becomes `15` |
+| `/=` | Division assignment | Divides and assigns result | `let x = 6; x /= 3;` | `x` becomes `2` |
+| `%=` | Modulus assignment | Performs modulus and assigns result | `let x = 7; x %= 3;` | `x` becomes `1` |
+| `**=` | Exponentiation assignment | Performs exponentiation and assigns result | `let x = 2; x **= 3;` | `x` becomes `8` |
+
+## Special Behaviors and Gotchas
+
+The `+` operator has multiple behaviors in JavaScript:
+
+1. **Number addition**: When both operands are numbers
+   ```javascript
+   5 + 3   // 8
+   ```
+
+2. **String concatenation**: When either operand is a string
+   ```javascript
+   "Hello" + " World"   // "Hello World"
+   "The answer is " + 42   // "The answer is 42"
+   42 + " is the answer"   // "42 is the answer"
+   ```
+
+3. **Type coercion**: JavaScript tries to convert non-string values to strings when concatenating
+   ```javascript
+   "5" + 3   // "53" (number 3 coerced to string)
+   5 + "3"   // "53" (number 5 coerced to string)
+   ```
+
+For other arithmetic operators, JavaScript attempts to convert strings to numbers:
+
+```javascript
+"5" - 3     // 2 (string "5" coerced to number)
+"5" * "3"   // 15 (both strings coerced to numbers)
+10 / "2"    // 5 (string "2" coerced to number)
+```
+
+## Increment/Decrement Position Matters
+
+The position of the `++` and `--` operators changes their behavior:
+
+```javascript
+// Prefix (returns new value)
+let a = 5;
+let b = ++a;   // a becomes 6, b becomes 6
+
+// Postfix (returns original value)
+let c = 5;
+let d = c++;   // c becomes 6, but d becomes 5
+```
+
+## Division and Special Number Values
+
+Division has some special cases in JavaScript:
+
+```javascript
+10 / 0         // Infinity
+-10 / 0        // -Infinity
+0 / 0          // NaN (Not a Number)
+```
+
+## The `Math` Object for More Complex Operations
+
+For more advanced math operations, JavaScript provides the `Math` object:
+
+```javascript
+Math.floor(5.95)     // 5 (rounds down)
+Math.ceil(5.05)      // 6 (rounds up)
+Math.round(5.5)      // 6 (rounds to nearest integer)
+Math.abs(-5)         // 5 (absolute value)
+Math.sqrt(25)        // 5 (square root)
+Math.min(2, 5, 1)    // 1 (minimum value)
+Math.max(2, 5, 1)    // 5 (maximum value)
+Math.random()        // Random number between 0 and 1 (exclusive)
+```
+
+## Integer Division Workaround
+
+Unlike some languages, JavaScript doesn't have a dedicated integer division operator. To perform integer division, you can use:
+
+```javascript
+Math.floor(7 / 2)    // 3 (discards the decimal part)
+~~(7 / 2)            // 3 (bitwise NOT trick for integer division)
+(7 / 2) | 0          // 3 (bitwise OR with 0 for integer division)
+```
+
+Understanding these arithmetic operators and their behaviors is essential for writing effective JavaScript code, especially when dealing with user inputs and numeric calculations.
