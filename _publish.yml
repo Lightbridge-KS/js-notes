@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 55c74b96-ac4b-4811-849a-f620c0b5670a
+      url: https://js-notes-lightbridge.netlify.app
