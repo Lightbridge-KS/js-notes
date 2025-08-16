@@ -21,6 +21,10 @@ book:
       - "content/operator-arith.qmd"
       - "content/operator-comp.qmd"
       - "content/control-flow.ipynb"
+    - part: TS
+      chapters: 
+      - "content/ts/ts-00-roadmap.qmd"
+      - "content/ts/ts-01-getstarted.qmd"
     - part: Package
       chapters: 
         - "content/import.qmd"

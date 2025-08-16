@@ -1,0 +1,36 @@
+# TS - Roadmap
+
+Here's your TypeScript learning roadmap, prioritized from high to low:
+
+## High Priority (Essential Foundation)
+
+| Priority | Topic | Why Important for You |
+|----------|-------|----------------------|
+| 1 | **Type System Fundamentals** | Core difference from Dart's type system |
+| 2 | **Basic Types & Type Annotations** | Similar to Dart but with key differences |
+| 3 | **Interfaces vs Classes** | Different philosophy from Dart |
+| 4 | **Functions & Arrow Functions** | JS/TS function syntax variations |
+| 5 | **Null Safety & Optional Types** | Different approach than Dart's null safety |
+| 6 | **Arrays & Tuples** | TS-specific type features |
+
+## Medium Priority (Core Skills)
+
+| Priority | Topic | Why Important for You |
+|----------|-------|----------------------|
+| 7 | **Generics** | Similar concept to Dart but different syntax |
+| 8 | **Union & Intersection Types** | Powerful TS feature not in Dart |
+| 9 | **Enums & Literal Types** | Different from Dart enums |
+| 10 | **Modules & Imports/Exports** | Different from Dart's library system |
+| 11 | **Async/Await & Promises** | Similar to Dart Futures but different APIs |
+| 12 | **Error Handling** | No try/catch exceptions like Dart |
+
+## Lower Priority (Advanced & Specialized)
+
+| Priority | Topic | Why Important for You |
+|----------|-------|----------------------|
+| 13 | **Decorators** | Similar to Dart annotations |
+| 14 | **Advanced Type Manipulation** | Utility types, mapped types |
+| 15 | **Configuration (tsconfig.json)** | Project setup |
+| 16 | **JavaScript Interop** | Working with untyped JS |
+| 17 | **Build Tools & Bundlers** | Ecosystem knowledge |
+| 18 | **Framework Integration** | React, Node.js specifics |

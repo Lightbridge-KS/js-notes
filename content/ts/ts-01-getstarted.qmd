@@ -1,0 +1,352 @@
+# TS: Get Started
+
+Great! I'll be your TypeScript teacher and tailor the lessons to your Dart/Flutter background. Since you already understand programming concepts, we can focus on the unique aspects of TypeScript and how it differs from Dart.
+
+## TypeScript: Getting Started Guide
+
+### What is TypeScript?
+
+TypeScript is a **superset** of JavaScript that adds static type checking. Think of it like Dart's relationship to dynamic languages - it gives you compile-time safety while still running on the JavaScript runtime.
+
+**Key similarities to Dart:**
+- Strong typing system
+- Compile-time error checking
+- Modern language features
+- Great tooling support
+
+**Key differences from Dart:**
+- Compiles to JavaScript (not native code)
+- Gradual typing (can mix typed and untyped code)
+- Structural typing vs Dart's nominal typing
+
+## Setting Up TypeScript
+
+```bash
+# Install globally
+npm install -g typescript
+
+# Or use in a project
+npm init -y
+npm install --save-dev typescript @types/node
+
+# Create tsconfig.json
+npx tsc --init
+```
+
+## Basic Types
+
+### Primitive
+
+```ts
+// DART EQUIVALENT -> TYPESCRIPT
+
+// Dart: int age = 25;
+let age: number = 25;
+
+// Dart: String name = "John";
+let name: string = "John";
+
+// Dart: bool isActive = true;
+let isActive: boolean = true;
+```
+
+### Collection
+
+```ts
+// Dart: List<String> fruits = ["apple", "banana"];
+let fruits: string[] = ["apple", "banana"];
+// Alternative array syntax
+let fruits2: Array<string> = ["apple", "banana"];
+
+// Dart: Map<String, int> scores = {"math": 95, "english": 88};
+let scores: { [key: string]: number } = { "math": 95, "english": 88 };
+// Or using Record utility type
+let scores2: Record<string, number> = { "math": 95, "english": 88 };
+```
+
+### Others
+
+```ts
+// Type inference (similar to Dart's var)
+let autoName = "TypeScript"; // inferred as string
+let autoAge = 30; // inferred as number
+
+// Union types (Dart doesn't have direct equivalent)
+let id: string | number = "abc123";
+id = 456; // Both are valid
+
+// Dart: dynamic (use sparingly in TS)
+let anything: any = "hello";
+anything = 42;
+anything = true;
+
+// Better alternative to 'any' - unknown
+let userInput: unknown = getUserInput();
+// Must type check before using
+if (typeof userInput === "string") {
+  console.log(userInput.toUpperCase());
+}
+
+// Null safety (similar to Dart's null safety)
+let nullableString: string | null = null;
+let undefinedString: string | undefined = undefined;
+
+// Optional properties (like Dart's ?)
+interface User {
+  name: string;
+  email?: string; // Optional property
+  age: number;
+}
+
+function getUserInput(): string {
+  return "sample input";
+}
+
+```
+
+
+## Functions
+
+### Declaration 
+
+```ts
+// Dart: int add(int a, int b) => a + b;
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// Arrow function (like Dart's => but different syntax)
+const multiply = (a: number, b: number): number => a * b;
+```
+
+### Parameters
+
+```ts
+// Optional parameters (similar to Dart's optional positional)
+function greet(name: string, greeting?: string): string {
+  return `${greeting || "Hello"}, ${name}!`;
+}
+
+// Default parameters
+function createUser(name: string, role: string = "user"): User {
+  return { name, role };
+}
+
+// Rest parameters (like Dart's variadic functions)
+function sum(...numbers: number[]): number {
+  return numbers.reduce((total, num) => total + num, 0);
+}
+```
+
+### Function overloads
+
+```ts
+// Function overloads (TypeScript feature, Dart doesn't have this)
+function process(x: string): string;
+function process(x: number): number;
+function process(x: string | number): string | number {
+  if (typeof x === "string") {
+    return x.toUpperCase();
+  }
+  return x * 2;
+}
+```
+
+### Generic functions
+
+```ts
+// Generic functions (similar to Dart)
+function identity<T>(arg: T): T {
+  return arg;
+}
+
+const stringResult = identity<string>("hello");
+const numberResult = identity<number>(42);
+```
+
+### Function types
+
+```ts
+// Function types (like Dart's Function type)
+type MathOperation = (a: number, b: number) => number;
+
+const operations: MathOperation[] = [
+  (a, b) => a + b,
+  (a, b) => a - b,
+  (a, b) => a * b,
+];
+```
+
+### Callback functions
+
+```ts
+// Callback functions (very common in JS/TS)
+function processAsync(callback: (result: string) => void): void {
+  setTimeout(() => {
+    callback("Processing complete!");
+  }, 1000);
+}
+
+// Usage
+processAsync((result) => {
+  console.log(result);
+});
+```
+
+## Key Concepts Coming from Dart
+
+### Structural vs Nominal Typing
+
+**Dart (Nominal):** Types are different if they have different names
+**TypeScript (Structural):** Types are compatible if they have the same structure
+
+```typescript
+// In TypeScript, these are compatible!
+interface Point2D { x: number; y: number; }
+interface Coordinate { x: number; y: number; }
+
+function drawPoint(point: Point2D) { /* ... */ }
+let coord: Coordinate = { x: 1, y: 2 };
+drawPoint(coord); // ✅ Works! Same structure
+```
+
+### No Null Safety by Default (but can be enabled)
+
+Unlike Dart's built-in null safety, TypeScript requires configuration:
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true
+  }
+}
+```
+
+## Your First TypeScript Program
+
+::: {.callout-note appearance="simple" collapse="true"}
+### TS
+
+```ts
+
+// todo.ts - A simple Todo app (familiar territory from Flutter!)
+
+interface Todo {
+  id: number;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+}
+
+class TodoManager {
+  private todos: Todo[] = [];
+  private nextId: number = 1;
+
+  // Add todo (similar to Dart methods)
+  addTodo(title: string): Todo {
+    const todo: Todo = {
+      id: this.nextId++,
+      title,
+      completed: false,
+      createdAt: new Date()
+    };
+    
+    this.todos.push(todo);
+    return todo;
+  }
+
+  // Get all todos
+  getAllTodos(): Todo[] {
+    return [...this.todos]; // Spread operator (like Dart's ...list)
+  }
+
+  // Toggle completion
+  toggleTodo(id: number): boolean {
+    const todo = this.todos.find(t => t.id === id);
+    if (todo) {
+      todo.completed = !todo.completed;
+      return true;
+    }
+    return false;
+  }
+
+  // Filter todos (similar to Dart's where())
+  getCompletedTodos(): Todo[] {
+    return this.todos.filter(todo => todo.completed);
+  }
+
+  getPendingTodos(): Todo[] {
+    return this.todos.filter(todo => !todo.completed);
+  }
+
+  // Remove todo
+  removeTodo(id: number): boolean {
+    const index = this.todos.findIndex(t => t.id === id);
+    if (index !== -1) {
+      this.todos.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  // Get todo count
+  get totalCount(): number {
+    return this.todos.length;
+  }
+
+  get completedCount(): number {
+    return this.getCompletedTodos().length;
+  }
+}
+
+// Usage example
+function main() {
+  const todoManager = new TodoManager();
+
+  // Add some todos
+  todoManager.addTodo("Learn TypeScript");
+  todoManager.addTodo("Build a web app");
+  todoManager.addTodo("Deploy to production");
+
+  // Toggle completion
+  todoManager.toggleTodo(1);
+
+  // Display todos
+  console.log("All todos:");
+  todoManager.getAllTodos().forEach(todo => {
+    const status = todo.completed ? "✅" : "⏳";
+    console.log(`${status} ${todo.title} (${todo.createdAt.toDateString()})`);
+  });
+
+  console.log(`\nTotal: ${todoManager.totalCount}, Completed: ${todoManager.completedCount}`);
+}
+
+// Run the program
+main();
+
+```
+:::
+
+
+## Next Steps & Practice
+
+**To run this code:**
+1. Save as `todo.ts`
+2. Compile: `tsc todo.ts`
+3. Run: `node todo.js`
+
+**Key takeaways for a Dart developer:**
+
+- TypeScript syntax is more flexible than Dart
+- Structural typing vs nominal typing
+- No built-in null safety (but configurable)
+- Rich ecosystem and JavaScript interoperability
+- Similar OOP concepts but with some differences
+
+**Questions to explore:**
+
+1. How comfortable are you with the structural typing concept?
+2. What specific areas would you like to dive deeper into next?
+3. Are there particular Dart features you're wondering about TypeScript equivalents for?
