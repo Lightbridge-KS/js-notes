@@ -1,0 +1,167 @@
+# Type system fundamentals
+
+## The Philosophy: Structural vs Nominal Typing
+
+Coming from Dart, you're used to **nominal typing** - where types are determined by their explicit declarations and inheritance relationships. TypeScript takes a fundamentally different approach called **structural typing** (also known as "duck typing").
+
+In Dart, if you have two classes with identical structures but different names, they're considered completely different types:
+
+```dart
+// Dart - Nominal typing
+class Point2D {
+  double x, y;
+  Point2D(this.x, this.y);
+}
+
+class Vector2D {
+  double x, y;  // Same structure as Point2D
+  Vector2D(this.x, this.y);
+}
+
+// These are different types even though they're structurally identical
+```
+
+TypeScript thinks differently. It cares about the **shape** of your data, not the name:
+
+```typescript
+// TypeScript - Structural typing
+interface Point2D {
+  x: number;
+  y: number;
+}
+
+interface Vector2D {
+  x: number;
+  y: number;
+}
+
+// These are considered the SAME type because they have identical structure
+function processPoint(point: Point2D) {
+  console.log(`x: ${point.x}, y: ${point.y}`);
+}
+
+const vector: Vector2D = { x: 5, y: 10 };
+processPoint(vector); // ✅ This works! TypeScript sees them as compatible
+```
+
+**Why does this matter for you?** This structural approach makes TypeScript incredibly flexible for data processing and API integration - something you'll likely encounter a lot in radiology data science work.
+
+## Static vs Dynamic: The Compile-Time Safety Net
+
+Here's where TypeScript shines compared to regular JavaScript. You already understand this concept from Dart - types are checked at compile time, not runtime. But TypeScript adds an interesting twist.
+
+```typescript
+// TypeScript provides compile-time checking...
+function calculateBMI(weight: number, height: number): number {
+  return weight / (height * height);
+}
+
+calculateBMI(70, 1.75);     // ✅ Valid
+calculateBMI("70", "1.75"); // ❌ TypeScript error at compile time
+
+// ...but compiles to regular JavaScript with no type information
+// The compiled JS would be:
+// function calculateBMI(weight, height) {
+//   return weight / (height * height);
+// }
+```
+
+This is different from Dart, where types exist at runtime too. TypeScript types are purely a development-time tool - they disappear completely when your code runs.
+
+## Type Inference: The Smart Assistant
+
+TypeScript has exceptionally powerful type inference, often stronger than what you might be used to in Dart. It can deduce types from context in sophisticated ways:
+
+```typescript
+// TypeScript infers the type without explicit annotation
+let patientAge = 45; // Inferred as 'number'
+let hospitalName = "Bangkok General"; // Inferred as 'string'
+
+// More sophisticated inference
+const patients = [
+  { id: 1, name: "John", age: 34 },
+  { id: 2, name: "Jane", age: 28 }
+];
+// TypeScript infers: { id: number; name: string; age: number }[]
+
+// Function return type inference
+function getDiagnosisCode(condition: string) {
+  if (condition === "pneumonia") {
+    return "J18"; // TypeScript infers return type as 'string'
+  }
+  return "Unknown";
+}
+```
+
+The inference is contextual and flows both ways - it can infer types from how you use variables, not just from how you declare them.
+
+## Gradual Typing: The Migration Friend
+
+This is perhaps the most practical difference from Dart. TypeScript allows you to gradually add types to existing JavaScript code. You can start with loose typing and tighten it over time:
+
+```typescript
+// Start loose (like JavaScript)
+let data: any = fetchPatientData();
+
+// Gradually add more specific types
+let data: { name: string; age: number } = fetchPatientData();
+
+// Eventually arrive at precise typing
+interface PatientData {
+  id: string;
+  name: string;
+  age: number;
+  diagnoses: string[];
+}
+let data: PatientData = fetchPatientData();
+```
+
+This flexibility is incredibly valuable when working with medical data APIs or integrating with existing JavaScript libraries in your radiology work.
+
+## Key Mindset Shifts from Dart
+
+Understanding these fundamental differences will help you think in TypeScript terms:
+
+**Dart mindset**: "This object IS a Patient because I declared it as such"
+**TypeScript mindset**: "This object BEHAVES like a Patient because it has the right properties"
+
+**Dart mindset**: "Types protect me at runtime"
+**TypeScript mindset**: "Types guide me during development and disappear at runtime"
+
+**Dart mindset**: "I must declare all my types explicitly"
+**TypeScript mindset**: "I can let TypeScript infer types when it's obvious, and be explicit when it's important"
+
+## A Quick Mental Exercise
+
+Before we move to the next topic, try to predict what TypeScript would do in this scenario:
+
+```typescript
+interface MedicalReport {
+  patientId: string;
+  findings: string;
+  date: string;
+}
+
+interface LabResult {
+  patientId: string;
+  findings: string;
+  date: string;
+}
+
+function processReport(report: MedicalReport) {
+  console.log(`Processing report for patient ${report.patientId}`);
+}
+
+const labResult: LabResult = {
+  patientId: "P001",
+  findings: "Normal glucose levels",
+  date: "2024-08-17"
+};
+
+// Will this work?
+processReport(labResult);
+```
+
+What do you think happens here? Does TypeScript accept this or reject it? Take a moment to reason through it using what we've covered about structural typing.
+
+The answer reveals something fundamental about how TypeScript thinks about types, and understanding this will make the next topics much clearer. What's your prediction?

@@ -25,6 +25,7 @@ book:
       chapters: 
       - "content/ts/ts-00-roadmap.qmd"
       - "content/ts/ts-01-getstarted.qmd"
+      - "content/ts/ts-02-types-basic.qmd"
     - part: Package
       chapters: 
         - "content/import.qmd"
