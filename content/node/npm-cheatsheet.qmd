@@ -1,0 +1,233 @@
+# Node.js & npm Command Cheatsheet
+
+## Project Initialization & Setup
+
+### Starting a New Project
+```bash
+# Initialize new project (similar to 'flutter create' but for Node.js)
+npm init                    # Interactive project setup
+npm init -y                # Quick setup with defaults
+npm init @scope/template   # Use specific template (like create-react-app)
+
+# Create package.json with specific settings
+npm init --name="my-project" --version="1.0.0"
+```
+
+## Package Management
+
+### Installing Packages
+```bash
+# Install dependencies (similar to 'pub get' in Flutter)
+npm install                 # Install all dependencies from package.json
+npm install <package>       # Install specific package
+npm install <package>@1.2.3 # Install specific version
+
+# Development vs Production dependencies
+npm install <package> --save-dev    # Dev dependency (like dev_dependencies in pubspec.yaml)
+npm install <package> --save-prod   # Production dependency (default)
+
+# Global installations (system-wide tools)
+npm install -g <package>    # Install globally (like pub global activate)
+
+# Alternative installation methods
+npm install <package> --no-save     # Install without adding to package.json
+npm install --production            # Install only production dependencies
+```
+
+### Package Information & Management
+```bash
+# View installed packages
+npm list                    # Show dependency tree
+npm list --depth=0         # Show only top-level packages
+npm list -g                # Show global packages
+npm list <package>         # Check if specific package is installed
+
+# Package information
+npm info <package>         # Show package details
+npm outdated              # Show outdated packages
+npm audit                 # Security vulnerability check
+npm audit fix             # Automatically fix vulnerabilities
+```
+
+### Updating & Removing Packages
+```bash
+# Update packages
+npm update                 # Update all packages
+npm update <package>       # Update specific package
+
+# Remove packages
+npm uninstall <package>    # Remove package and update package.json
+npm uninstall <package> --save-dev  # Remove dev dependency
+npm uninstall -g <package> # Remove global package
+```
+
+## Running Scripts & Applications
+
+### Script Execution
+```bash
+# Run scripts defined in package.json (like 'flutter run')
+npm run <script-name>      # Run custom script
+npm start                  # Run 'start' script (usually starts the app)
+npm test                   # Run 'test' script
+npm run build             # Run 'build' script (common for production builds)
+npm run dev               # Run 'dev' script (common for development server)
+
+# Run Node.js files directly
+node <filename.js>         # Execute JavaScript file
+node -e "console.log('Hello')"  # Execute inline JavaScript
+```
+
+### Development Tools
+```bash
+# Watch for file changes (development)
+npx nodemon <filename.js>  # Auto-restart on file changes
+npm run dev               # Often configured to use nodemon or similar
+
+# REPL (Read-Eval-Print Loop)
+node                      # Start interactive Node.js session
+```
+
+## Package Runners & Tools
+
+### NPX (Node Package Execute)
+```bash
+# Run packages without installing globally
+npx <package>             # Run package temporarily
+npx create-react-app my-app  # Use package generators
+npx eslint .              # Run linting tools
+npx prettier --write .    # Format code
+
+# Run local packages
+npx <local-package>       # Run locally installed package
+```
+
+## Cache & Configuration Management
+
+### Cache Operations
+```bash
+# Cache management
+npm cache verify          # Verify cache integrity
+npm cache clean --force   # Clear npm cache (similar to 'flutter clean')
+
+# Configuration
+npm config list           # Show all configuration
+npm config get <key>      # Get specific config value
+npm config set <key> <value>  # Set config value
+```
+
+## Version & Registry Management
+
+### Version Information
+```bash
+# Version checks
+node --version            # Check Node.js version
+npm --version            # Check npm version
+npm version              # Show version info for current project
+
+# Version bumping (in your project)
+npm version patch        # Increment patch version (1.0.0 → 1.0.1)
+npm version minor        # Increment minor version (1.0.0 → 1.1.0)  
+npm version major        # Increment major version (1.0.0 → 2.0.0)
+```
+
+### Registry Operations
+```bash
+# Package registry
+npm search <keyword>      # Search for packages
+npm view <package>       # View package details
+npm publish              # Publish your package to npm registry
+npm unpublish <package>  # Unpublish package (use carefully!)
+
+# Registry configuration
+npm config set registry <url>  # Set custom registry
+npm config get registry        # Check current registry
+```
+
+## Environment & Process Management
+
+### Environment Variables
+```bash
+# Set environment variables for Node.js
+NODE_ENV=production npm start    # Set environment for single command
+export NODE_ENV=development      # Set for session (in shell)
+
+# Common environment patterns
+npm run build:prod              # Often sets NODE_ENV=production
+npm run dev                     # Often sets NODE_ENV=development
+```
+
+### Process Management
+```bash
+# Process control
+node --inspect <file.js>        # Start with debugger
+node --max-old-space-size=4096  # Increase memory limit
+node --trace-warnings           # Show stack traces for warnings
+
+# Kill processes
+killall node                    # Kill all Node.js processes (macOS/Linux)
+pkill -f node                   # Alternative way to kill Node processes
+```
+
+## Common Development Workflow
+
+### Typical Project Setup Flow
+```bash
+# 1. Create new project directory
+mkdir my-project && cd my-project
+
+# 2. Initialize npm project
+npm init -y
+
+# 3. Install dependencies
+npm install express            # Example: web framework
+npm install --save-dev nodemon # Example: development tool
+
+# 4. Create main file
+echo "console.log('Hello Node.js!');" > index.js
+
+# 5. Add scripts to package.json (edit manually or via npm)
+npm pkg set scripts.start="node index.js"
+npm pkg set scripts.dev="nodemon index.js"
+
+# 6. Run the application
+npm run dev                    # For development
+npm start                      # For production
+```
+
+## Troubleshooting Commands
+
+### Common Issues Resolution
+```bash
+# Clear everything and reinstall
+rm -rf node_modules package-lock.json
+npm install                    # Fresh installation
+
+# Permission issues (avoid using sudo with npm)
+npm config set prefix ~/.npm-global  # Set global prefix to user directory
+
+# Check for issues
+npm doctor                     # Run npm health check
+npm ls                         # Check for dependency issues
+npm audit                      # Security check
+```
+
+## Key Differences from Flutter/Dart
+
+| Concept | Flutter/Dart | Node.js/npm |
+|---------|--------------|-------------|
+| Package file | `pubspec.yaml` | `package.json` |
+| Lock file | `pubspec.lock` | `package-lock.json` |
+| Install deps | `pub get` | `npm install` |
+| Run app | `flutter run` | `npm start` or `node file.js` |
+| Global tools | `pub global activate` | `npm install -g` |
+| Clean cache | `flutter clean` | `npm cache clean --force` |
+| Dev dependencies | `dev_dependencies:` | `npm install --save-dev` |
+
+## Pro Tips
+
+- Use `npm ci` instead of `npm install` in CI/CD environments for faster, reliable installs
+- Create `.nvmrc` file to specify Node.js version for your project
+- Use `npm run` without arguments to list all available scripts
+- Add `node_modules/` to your `.gitignore` file (never commit dependencies)
+- Use `npx` to run tools without global installation
+- Check `package-lock.json` into version control for reproducible builds

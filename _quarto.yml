@@ -9,9 +9,9 @@ book:
   site-url: https://js-notes-lightbridge.netlify.app
   chapters:
     - index.qmd
-    - part: NPM
+    - part: Node & NPM
       chapters: 
-        - "content/npm-command.qmd"
+        - "content/node/npm-cheatsheet.qmd"
     - part: JS Basic
       chapters: 
       - "content/basic-syntax.ipynb"
