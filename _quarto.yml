@@ -28,8 +28,8 @@ book:
       - "content/ts/ts-02-types-basic.qmd"
     - part: Package
       chapters: 
-        - "content/basic/js-module-system.qmd"
-        - "content/import.qmd"
+        - "content/module/01-module-system.qmd"
+        - "content/module/02-index-js.qmd"
 
 
 format:
