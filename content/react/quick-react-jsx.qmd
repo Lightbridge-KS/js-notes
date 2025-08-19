@@ -1,0 +1,283 @@
+# Quick React & JSX
+
+::: {.callout-note appearance="default" collapse="false"}
+**Q:** Teach me a basic JSX and React just enough to be used in Docusaurus website.
+:::
+
+I'll help you learn JSX and React fundamentals specifically for Docusaurus! Since you have experience with Dart/Flutter and intermediate JavaScript knowledge, I can build on concepts you already understand.
+
+Let me start by connecting this to your Flutter background, then we'll work through the essential JSX and React concepts you'll need for Docusaurus.
+
+## Understanding the Connection: Flutter Widgets → React Components
+
+In Flutter, you build UIs by composing widgets in a declarative way. React follows a very similar philosophy with components. Here's how they relate:
+
+```
+Flutter Widget Tree          React Component Tree
+├── MaterialApp             ├── App Component
+├── Scaffold                ├── Layout Component
+└── Column                  └── Container Component
+    ├── Text                    ├── Text Element
+    └── ElevatedButton          └── Button Component
+```
+
+Just like Flutter widgets return other widgets from their `build()` method, React components return JSX (which describes UI elements) from their render logic.
+
+## What is JSX?
+
+JSX is a syntax extension for JavaScript that lets you write HTML-like code inside JavaScript. Think of it as a more readable way to describe your UI structure, similar to how Flutter widgets describe UI declaratively.
+
+Here's a simple comparison:
+
+```javascript
+// Without JSX (pure JavaScript)
+React.createElement('div', 
+  { className: 'container' },
+  React.createElement('h1', null, 'Welcome!'),
+  React.createElement('p', null, 'This is my website')
+);
+
+// With JSX (much cleaner!)
+<div className="container">
+  <h1>Welcome!</h1>
+  <p>This is my website</p>
+</div>
+```
+
+## JSX Fundamentals for Docusaurus
+
+### 1. Basic JSX Syntax Rules
+
+JSX looks like HTML but has some important differences:
+
+```javascript
+// ✅ Correct JSX
+function WelcomeMessage() {
+  return (
+    <div className="greeting">  {/* className instead of class */}
+      <h1>Hello, World!</h1>
+      <p>Welcome to my site</p>
+      <img src="/img/logo.png" alt="Logo" />  {/* Self-closing tags need /> */}
+    </div>
+  );
+}
+```
+
+Key rules to remember:
+- Use `className` instead of `class` (because `class` is a JavaScript keyword)
+- Self-closing tags must end with `/>` 
+- All JSX must be wrapped in a single parent element or React Fragment
+- Use camelCase for HTML attributes (like `onClick` instead of `onclick`)
+
+### 2. JavaScript Expressions in JSX
+
+You can embed JavaScript expressions inside JSX using curly braces `{}`. This is similar to how you use `${}` for string interpolation in Dart:
+
+```javascript
+function UserProfile({ name, age, isOnline }) {
+  const status = isOnline ? "Online" : "Offline";
+  
+  return (
+    <div className="profile">
+      <h2>{name}</h2>  {/* Variable interpolation */}
+      <p>Age: {age}</p>
+      <p>Status: {status}</p>
+      <p>Born in: {2024 - age}</p>  {/* Expression */}
+      {isOnline && <span className="green-dot">🟢</span>}  {/* Conditional rendering */}
+    </div>
+  );
+}
+```
+
+### 3. React Components: The Building Blocks
+
+React components are like Flutter widgets. There are two main types, but for Docusaurus you'll primarily use function components:
+
+```javascript
+// Function Component (modern approach)
+function BlogPost({ title, content, author }) {
+  return (
+    <article className="blog-post">
+      <h1>{title}</h1>
+      <p className="author">By {author}</p>
+      <div className="content">
+        {content}
+      </div>
+    </article>
+  );
+}
+
+// Using the component
+<BlogPost 
+  title="Learning React" 
+  content="React is awesome!" 
+  author="Dr. Smith" 
+/>
+```
+
+This is conceptually similar to Flutter widgets that take parameters in their constructor.
+
+### 4. Props: Passing Data to Components
+
+Props in React are like constructor parameters in Flutter widgets. They let you pass data down from parent to child components:
+
+```javascript
+// Parent component
+function HomePage() {
+  return (
+    <div>
+      <Header siteName="My Medical Blog" />
+      <MainContent>
+        <WelcomeCard 
+          title="Welcome to Radiology AI" 
+          description="Exploring the intersection of radiology and artificial intelligence"
+        />
+      </MainContent>
+    </div>
+  );
+}
+
+// Child component
+function WelcomeCard({ title, description }) {
+  return (
+    <div className="welcome-card">
+      <h2>{title}</h2>
+      <p>{description}</p>
+    </div>
+  );
+}
+```
+
+### 5. Handling Events
+
+Event handling in React is straightforward and similar to Flutter's onPressed callbacks:
+
+```javascript
+function InteractiveButton() {
+  // Event handler function
+  function handleClick() {
+    alert('Button clicked!');
+  }
+  
+  return (
+    <button 
+      className="my-button" 
+      onClick={handleClick}  // Pass function reference
+    >
+      Click me!
+    </button>
+  );
+}
+
+// Or inline (for simple operations)
+function QuickButton() {
+  return (
+    <button onClick={() => console.log('Quick click!')}>
+      Quick Action
+    </button>
+  );
+}
+```
+
+## Practical Docusaurus Examples
+
+Now let's look at how you'll actually use JSX in Docusaurus. Here are common patterns you'll encounter:
+
+### Custom Components for Documentation
+
+```javascript
+// components/HighlightBox.js
+function HighlightBox({ children, type = "info" }) {
+  return (
+    <div className={`highlight-box highlight-${type}`}>
+      {children}
+    </div>
+  );
+}
+
+export default HighlightBox;
+```
+
+Using it in your markdown/MDX files:
+
+```mdx
+# My Documentation Page
+
+Regular markdown content here...
+
+<HighlightBox type="warning">
+This is an important warning about the procedure.
+</HighlightBox>
+
+More markdown content...
+```
+
+### Interactive Code Examples
+
+```javascript
+// components/CodeExample.js
+import { useState } from 'react';
+
+function CodeExample({ code, language }) {
+  const [copied, setCopied] = useState(false);
+  
+  function copyToClipboard() {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+  
+  return (
+    <div className="code-example">
+      <div className="code-header">
+        <span>{language}</span>
+        <button onClick={copyToClipboard}>
+          {copied ? 'Copied!' : 'Copy'}
+        </button>
+      </div>
+      <pre>
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+```
+
+## Mental Model: Think in Components
+
+Here's how to approach building with React/JSX, using your Flutter experience:
+
+```
+Flutter Thinking                React/JSX Thinking
+================                ==================
+1. Break UI into widgets    →   1. Break UI into components
+2. Compose widgets          →   2. Compose components  
+3. Pass data via constructor →   3. Pass data via props
+4. Handle state changes     →   4. Handle state with hooks
+5. Rebuild when data changes →   5. Re-render when props/state change
+```
+
+The key insight is that both Flutter and React follow a **declarative** paradigm. You describe what the UI should look like for a given state, rather than imperatively manipulating the DOM.
+
+## Practice Exercise
+
+Try creating this simple component that you might use in a medical documentation site:
+
+```javascript
+function DiagnosticCard({ patientId, finding, confidence, imagePath }) {
+  return (
+    <div className="diagnostic-card">
+      <img src={imagePath} alt={`Scan for patient ${patientId}`} />
+      <div className="details">
+        <h3>Patient: {patientId}</h3>
+        <p className="finding">{finding}</p>
+        <div className={`confidence ${confidence > 0.9 ? 'high' : 'medium'}`}>
+          Confidence: {Math.round(confidence * 100)}%
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+What questions do you have about JSX or React concepts? Would you like me to dive deeper into any particular area, such as state management with hooks or how to organize components in a Docusaurus project?

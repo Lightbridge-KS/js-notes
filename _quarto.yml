@@ -31,6 +31,10 @@ book:
         - "content/module/01-module-system.qmd"
         - "content/module/02-index-js.qmd"
         - "content/module/03-path-alias.qmd"
+    - part: React
+      chapters: 
+        - "content/react/quick-react-jsx.qmd"
+        - "content/react/jsx-deep-dive.qmd"
 
 
 format:
