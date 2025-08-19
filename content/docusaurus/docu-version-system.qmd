@@ -1,0 +1,103 @@
+# Docusaurus Version 
+
+Docusaurus has **built-in versioning support** for docs! This is one of its core features designed specifically for software documentation. You don't need any plugins or custom solutions.
+
+## How Docusaurus Versioning Works
+
+Here's the basic flow:
+
+```
+docs/           <- Current/next version (default)
+├── intro.md
+├── api/
+└── guides/
+
+versioned_docs/
+├── version-2.0/    <- Archived version 2.0
+└── version-1.0/    <- Archived version 1.0
+
+versions.json       <- List of available versions
+```
+
+## Setting Up Versioning
+
+### 1. Create Your First Version
+
+When you're ready to "freeze" your current docs as a version:
+
+```bash
+npm run docusaurus docs:version 1.0
+```
+
+This creates:
+- `versioned_docs/version-1.0/` (snapshot of current docs)
+- `versioned_sidebars/version-1.0-sidebars.json` 
+- Updates `versions.json`
+
+### 2. Configure in `docusaurus.config.js`
+
+```javascript
+module.exports = {
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          // ... other config
+          lastVersion: 'current',           // Which version is "latest"
+          versions: {
+            current: {
+              label: '2.1 (Next)',         // Label for current/unreleased
+            },
+            '2.0': {
+              label: '2.0',
+              path: '2.0',
+              banner: 'none',               // No banner for stable version
+            },
+            '1.0': {
+              label: '1.0',
+              path: '1.0',
+              banner: 'unmaintained',       // Warning banner
+            },
+          },
+        },
+      },
+    ],
+  ],
+};
+```
+
+### 3. The Result
+
+Users get a dropdown in the navbar:
+```
+📖 Docs  [v2.1 (Next) ▼]
+           ├── 2.1 (Next) ✓
+           ├── 2.0
+           └── 1.0
+```
+
+## Workflow Example
+
+```
+# Working on docs for next release
+docs/api.md              <- Edit current version
+
+# Ready to release v2.0?
+npm run docusaurus docs:version 2.0
+
+# Now you have:
+docs/api.md              <- Continue working (v2.1)
+versioned_docs/version-2.0/api.md  <- Frozen v2.0
+```
+
+## Key Benefits
+
+- **Automatic routing**: `/docs/` (latest), `/docs/2.0/`, `/docs/1.0/`
+- **Version selector**: Built-in dropdown component
+- **SEO friendly**: Each version gets proper URLs
+- **Banner support**: Show warnings for old versions
+
+This is much simpler than building custom versioning! Docusaurus handles all the routing, UI components, and file management for you.
+
+Want me to walk through setting up your first version or configuring the version labels/banners?

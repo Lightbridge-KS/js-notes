@@ -35,6 +35,9 @@ book:
       chapters: 
         - "content/react/quick-react-jsx.qmd"
         - "content/react/jsx-deep-dive.qmd"
+    - part: Docusaurus
+      chapters: 
+        - "content/docusaurus/docu-version-system.qmd"
 
 
 format:
