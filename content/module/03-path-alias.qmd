@@ -1,0 +1,288 @@
+# Path Alias
+
+::: {.callout-note appearance="simple" collapse="false"}
+**Q:** What the `@` symbol is used for when importing? For example `import Button from '@mui/material/Button';`
+:::
+
+
+Great question! The `@` symbol in JavaScript imports serves several purposes, and it's quite different from what you might expect coming from Python. Let me break this down for you.
+
+## The `@` Symbol: Scoped Packages vs Path Aliases
+
+The `@` symbol is used in two main contexts in JavaScript:
+
+```
+Two Uses of @ Symbol:
+┌─────────────────────────┐    ┌─────────────────────────┐
+│    Scoped Packages      │    │     Path Aliases        │
+│   (npm registry)        │    │  (build tool config)    │
+│                         │    │                         │
+│ @mui/material/Button    │    │ @/components/Button     │
+│ @types/react            │    │ @/utils/helpers         │
+│ @company/shared-lib     │    │ @/assets/images         │
+└─────────────────────────┘    └─────────────────────────┘
+```
+
+## 1. Scoped Packages (npm Registry)
+
+The `@mui/material/Button` example you mentioned is a **scoped package**. This is an npm registry feature that allows organizations to namespace their packages.
+
+**Structure breakdown:**
+```
+@mui/material/Button
+│  │    │       │
+│  │    │       └── Specific module/component
+│  │    └────────── Package name  
+│  └─────────────── Organization scope
+└────────────────── Scope indicator
+```
+
+This is similar to how Python has namespaced packages, but the syntax is different:
+
+```python
+# Python: organization.package.module
+from google.cloud.storage import Client
+from django.contrib.auth import authenticate
+
+# JavaScript: @organization/package/module  
+import Button from '@mui/material/Button';
+import { Storage } from '@google-cloud/storage';
+```
+
+**Common scoped packages you'll encounter:**
+
+```javascript
+// Material-UI (now MUI) - React UI framework
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+
+// TypeScript type definitions
+import type { ReactNode } from '@types/react';
+
+// Company/organization packages
+import { api } from '@company/shared-api';
+import { Logger } from '@internal/logging';
+
+// Popular scoped packages
+import { render } from '@testing-library/react';
+import { defineConfig } from '@vite/config';
+```
+
+## 2. Path Aliases (Build Tool Configuration)
+
+The second use of `@` is as a **path alias** configured in your build tools. This is purely a developer convenience feature:
+
+```javascript
+// Instead of messy relative imports:
+import Button from '../../../components/ui/Button';
+import { fetchUser } from '../../../../services/api/users';
+
+// You can configure @ as an alias for your src folder:
+import Button from '@/components/ui/Button';
+import { fetchUser } from '@/services/api/users';
+```
+
+This is similar to Python's absolute imports from your project root:
+
+```python
+# Python: absolute imports from project root
+from my_project.components.ui.button import Button
+from my_project.services.api.users import fetch_user
+
+# JavaScript: with @ alias (points to src/)
+import Button from '@/components/ui/Button';
+import { fetchUser } from '@/services/api/users';
+```
+
+## Setting Up Path Aliases
+
+Here's how you configure path aliases in different tools:
+
+**Vite (modern build tool):**
+```javascript
+// vite.config.js
+import { defineConfig } from 'vite';
+import path from 'path';
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+      '@assets': path.resolve(__dirname, './src/assets')
+    }
+  }
+});
+```
+
+**Webpack:**
+```javascript
+// webpack.config.js
+module.exports = {
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src/'),
+      '@components': path.resolve(__dirname, 'src/components/'),
+      '@utils': path.resolve(__dirname, 'src/utils/')
+    }
+  }
+};
+```
+
+**TypeScript configuration:**
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@utils/*": ["src/utils/*"]
+    }
+  }
+}
+```
+
+## Real-World Example: Medical Imaging App
+
+Let me show you how this might work in a medical imaging application:
+
+**Project structure:**
+```
+medical-imaging-app/
+├── src/
+│   ├── components/
+│   │   ├── dicom/
+│   │   │   ├── DicomViewer.js
+│   │   │   └── DicomMetadata.js
+│   │   └── ui/
+│   │       ├── Button.js
+│   │       └── Modal.js
+│   ├── services/
+│   │   ├── dicom-parser.js
+│   │   └── pacs-api.js
+│   ├── utils/
+│   │   ├── image-processing.js
+│   │   └── validation.js
+│   └── main.js
+├── package.json
+└── vite.config.js
+```
+
+**Without aliases (messy):**
+```javascript
+// src/components/dicom/DicomViewer.js
+import Button from '../ui/Button.js';
+import { parseDicom } from '../../services/dicom-parser.js';
+import { enhanceImage } from '../../utils/image-processing.js';
+import { validateDicomFile } from '../../utils/validation.js';
+```
+
+**With aliases (clean):**
+```javascript
+// src/components/dicom/DicomViewer.js
+import Button from '@/components/ui/Button.js';
+import { parseDicom } from '@/services/dicom-parser.js';
+import { enhanceImage } from '@/utils/image-processing.js';
+import { validateDicomFile } from '@/utils/validation.js';
+
+// Or even more specific aliases:
+import Button from '@components/ui/Button.js';
+import { parseDicom } from '@services/dicom-parser.js';
+import { enhanceImage } from '@utils/image-processing.js';
+```
+
+**Using scoped packages alongside aliases:**
+```javascript
+// src/components/dicom/DicomViewer.js
+// Scoped packages from npm
+import { Box, Typography } from '@mui/material';
+import { toast } from '@radix-ui/react-toast';
+
+// Your own code via aliases
+import DicomMetadata from '@/components/dicom/DicomMetadata.js';
+import { parseDicom } from '@/services/dicom-parser.js';
+
+export function DicomViewer({ dicomFile }) {
+  const metadata = parseDicom(dicomFile);
+  
+  return (
+    <Box>
+      <Typography variant="h4">DICOM Viewer</Typography>
+      <DicomMetadata data={metadata} />
+    </Box>
+  );
+}
+```
+
+## Common Alias Conventions
+
+Different projects use different conventions, but here are the most common ones:
+
+```javascript
+// Most common - @ points to src root
+import Component from '@/components/Component';
+
+// Specific feature aliases
+import Header from '@components/Header';
+import { api } from '@services/api';
+import logo from '@assets/logo.png';
+
+// Some projects use ~ instead of @
+import Component from '~/components/Component';
+
+// Domain-specific aliases (for larger apps)
+import DicomViewer from '@medical/components/DicomViewer';
+import { analyzeImage } from '@ai/services/image-analysis';
+```
+
+## Distinguishing Between Scoped Packages and Aliases
+
+Here's how to tell the difference when you see an import:
+
+```javascript
+// Scoped packages (from npm)
+import Button from '@mui/material/Button';         // Has multiple path segments
+import { render } from '@testing-library/react';   // Well-known org names
+import type from '@types/node';                    // Official type packages
+
+// Path aliases (your project code)
+import Button from '@/components/Button';          // Usually starts with @/
+import utils from '@utils/helpers';               // Single word after @
+import config from '@/config/app-settings';       // Points to your source code
+```
+
+**Quick identification rules:**
+1. **Multiple segments after the scope** (like `@mui/material/Button`) → Scoped package
+2. **Starts with `@/`** → Almost always a path alias
+3. **Well-known organization names** (like `@google`, `@microsoft`, `@types`) → Scoped package
+4. **Generic names** (like `@components`, `@utils`) → Path alias
+
+## Package.json Dependencies
+
+You can also see the difference in your `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@mui/material": "^5.14.0",           // Scoped package
+    "@types/react": "^18.2.0",            // Scoped package  
+    "axios": "^1.4.0"                     // Regular package
+  }
+}
+```
+
+Path aliases won't appear in `package.json` because they're just shortcuts to your own code, not external dependencies.
+
+## Mental Model
+
+Think of it this way:
+
+- **Scoped packages** are like Python's `import organization.package.module`
+- **Path aliases** are like Python's `from . import` but with custom shortcuts
+
+The `@` symbol is just JavaScript's way of creating organized namespaces and convenient shortcuts, making large codebases more manageable.
+
+Does this clarify the difference? Would you like me to show you how to set up path aliases in a specific build tool, or explore more examples of scoped packages commonly used in frontend development?
