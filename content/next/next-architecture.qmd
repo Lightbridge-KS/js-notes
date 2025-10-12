@@ -1,0 +1,56 @@
+# Next.js Archiecture
+
+## Basic Structure
+
+```zsh
+(base) ➜  next-app-test git:(main) tree -L 1
+.
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── node_modules
+├── package-lock.json
+├── package.json
+├── public
+├── README.md
+├── src
+└── tsconfig.json
+```
+
+**Configuration Files:**
+
+- **`package.json`** - Defines your project metadata, dependencies (libraries you use), and npm scripts (commands like `npm run dev`). Think of it like Python's `requirements.txt` + `setup.py` combined.
+
+- **`package-lock.json`** - Locks exact versions of all dependencies and their sub-dependencies. Ensures everyone on your team gets identical package versions. Similar to Python's `poetry.lock` or `Pipfile.lock`.
+
+- **`next.config.ts`** - Next.js configuration file written in TypeScript. Here you customize build behavior, redirects, environment variables, image optimization settings, etc. It's the main "settings file" for your Next.js app.
+
+- **`tsconfig.json`** - TypeScript compiler configuration. Sets rules for how TypeScript checks your code, module resolution, and your `@/*` import alias mapping. Like configuring a linter but for type checking.
+
+- **`eslint.config.mjs`** - ESLint configuration for code quality and style checking. Catches common bugs and enforces coding conventions. The `.mjs` extension means it's an ES Module (modern JavaScript module format).
+
+- **`next-env.d.ts`** - Auto-generated TypeScript declarations for Next.js. You should never edit this file manually. It tells TypeScript about Next.js-specific types and globals.
+
+**Directories:**
+
+- **`src/`** - Your application source code lives here (you chose "Yes" to using a src directory). Contains your `app/` folder with routes, components, and other code. Keeps your root directory cleaner.
+
+- **`public/`** - Static assets served directly at the root URL. Files here are accessible at `/filename`. For example, `public/logo.png` → accessible at `http://localhost:3000/logo.png`. Similar to static folders in web frameworks.
+
+- **`node_modules/`** - Contains all installed npm packages (dependencies). Never commit this to Git—it's regenerated from `package.json`. Like Python's `site-packages` or `venv/` directory.
+
+**Documentation:**
+
+- **`README.md`** - Project documentation in Markdown. Usually contains setup instructions and project overview. You're already familiar with Markdown from Quarto!
+
+---
+
+**Quick analogy to your Python experience:**
+```
+Next.js Project          Python Project
+├── package.json    →    requirements.txt / pyproject.toml
+├── node_modules/   →    venv/ or site-packages/
+├── src/            →    src/ (your source code)
+├── public/         →    static/ (in Flask/Django)
+└── tsconfig.json   →    mypy.ini or pyproject.toml (type checking)
+```

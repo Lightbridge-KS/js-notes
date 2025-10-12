@@ -41,6 +41,7 @@ book:
     - part: Next JS
       chapters: 
         - "content/next/creat-next-app.qmd"
+        - "content/next/next-architecture.qmd"
 
 
 format:
