@@ -1,0 +1,228 @@
+# Build for Static vs SSR
+
+## Static Export (Like Flutter Web)
+
+This generates pure HTML/CSS/JS files that can be deployed to static hosting (Netlify, Firebase Hosting, etc.) - **similar to Flutter web builds**.
+
+### Configuration
+
+**next.config.js:**
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'export',
+  // Optional: if deploying to subdirectory
+  // basePath: '/my-app',
+  // images: {
+  //   unoptimized: true, // Required for static export
+  // }
+}
+
+module.exports = nextConfig
+```
+
+### Build Command
+
+```bash
+npm run build
+```
+
+**Output location:** `.next/` folder, but Next.js also creates an **`out/`** directory:
+
+```
+my-nextjs-app/
+├── out/                ← Deploy this folder! (like Flutter's build/web)
+│   ├── index.html
+│   ├── about.html
+│   ├── _next/
+│   │   ├── static/
+│   │   └── ...
+│   └── ...
+├── .next/              ← Intermediate build files
+└── ...
+```
+
+### Deployment
+
+```bash
+# Deploy to Firebase Hosting (you're familiar with this!)
+firebase deploy
+
+# Or to Netlify
+netlify deploy --prod --dir=out
+```
+
+---
+
+## Server-Side Deployment (Full Next.js Features)
+
+This requires a Node.js server to run. Supports all Next.js features like SSR, ISR, API routes.
+
+### Configuration
+
+**next.config.js:**
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone', // Optional: creates optimized server bundle
+  // Or omit 'output' for default server build
+}
+
+module.exports = nextConfig
+```
+
+### Build Command
+
+```bash
+npm run build
+```
+
+**Output location:** `.next/` directory only (no `out/` folder)
+
+```
+my-nextjs-app/
+├── .next/              ← Entire app is here
+│   ├── standalone/     ← If using output: 'standalone'
+│   │   └── server.js   ← Optimized server entry
+│   ├── server/
+│   └── static/
+└── ...
+```
+
+### Deployment
+
+**Option 1: Standard deployment**
+```bash
+# Copy entire project to server, then:
+npm run build
+npm run start  # Runs on port 3000
+```
+
+**Option 2: Standalone mode (smaller, optimized)**
+```bash
+# After build, copy only:
+# - .next/standalone/
+# - .next/static/
+# - public/
+
+# Then run:
+node .next/standalone/server.js
+```
+
+---
+
+## Visual Comparison
+
+```
+STATIC EXPORT (output: 'export')
+================================
+Source Code → npm run build → out/ folder
+                                ↓
+                           Pure HTML/CSS/JS
+                                ↓
+                    ┌───────────┴───────────┐
+                    ↓                       ↓
+              Netlify/Firebase         CDN/Static Host
+              (Like Flutter web!)
+
+
+SERVER-SIDE (default or 'standalone')
+====================================
+Source Code → npm run build → .next/ folder
+                                ↓
+                      Server-side code + Client JS
+                                ↓
+                          Node.js Server
+                                ↓
+                    ┌───────────┴────────────┐
+                    ↓                        ↓
+            Vercel/Railway/AWS         Docker Container
+```
+
+---
+
+## Feature Comparison Table
+
+| Feature | Static Export | Server-Side |
+|---------|--------------|-------------|
+| **Hosting** | Any static host (Netlify, Firebase) | Requires Node.js server |
+| **Cost** | Usually free/cheap | Higher (server costs) |
+| **Build Output** | `out/` folder (HTML files) | `.next/` folder (server code) |
+| **Server-Side Rendering (SSR)** | ❌ No | ✅ Yes |
+| **Incremental Static Regeneration (ISR)** | ❌ No | ✅ Yes |
+| **API Routes** | ❌ No | ✅ Yes |
+| **Dynamic Routes** | Limited (must pregenerate) | ✅ Full support |
+| **Image Optimization** | ❌ Must disable | ✅ Yes |
+| **revalidate** | ❌ No | ✅ Yes |
+| **Similar to** | Flutter web build | Flutter with backend |
+
+---
+
+## When to Use Which?
+
+### Use Static Export if:
+- ✅ Content doesn't change often (like portfolio, docs)
+- ✅ You want to deploy to Firebase Hosting/Netlify (your current setup!)
+- ✅ You want lowest cost
+- ✅ All pages can be pre-rendered at build time
+- ✅ No need for API routes (use external API instead)
+
+### Use Server-Side if:
+- ✅ Need real-time data
+- ✅ User-specific content (dashboards, admin panels)
+- ✅ Need API routes in Next.js
+- ✅ Want image optimization
+- ✅ Need ISR (update pages without rebuilding)
+
+---
+
+## Example: Converting to Static Export
+
+If you have an existing Next.js app and want static export:
+
+**1. Update next.config.js:**
+```javascript
+module.exports = {
+  output: 'export',
+  images: {
+    unoptimized: true, // Required!
+  }
+}
+```
+
+**2. Remove server-only features:**
+```typescript
+// ❌ Remove these from pages:
+export async function getServerSideProps() { ... }
+
+// ✅ Keep these:
+export async function getStaticProps() { ... }
+export async function getStaticPaths() { ... }
+
+// ❌ Remove API routes:
+// pages/api/* or app/api/*
+```
+
+**3. Build:**
+```bash
+npm run build  # Creates out/ folder
+```
+
+**4. Deploy:**
+```bash
+firebase deploy
+```
+
+---
+
+## Quick Test
+
+Want to see which mode you're in?
+
+```bash
+# After npm run build, check:
+ls out/  # If exists → static export
+ls .next/standalone/  # If exists → standalone server mode
+```
+
+Given your background with Firebase Hosting and Netlify, **static export** might be your go-to for many projects, similar to how you'd deploy Flutter web apps!

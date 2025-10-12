@@ -1,0 +1,73 @@
+# Build Next JS
+
+## Building Next.js App
+
+To build a Next.js app for production, run:
+
+```bash
+npm run build
+# or
+yarn build
+# or
+pnpm build
+```
+
+This command does two things:
+1. **Optimizes** your code (minification, tree-shaking, etc.)
+2. **Pre-renders** pages (SSG) or prepares them for server-side rendering (SSR)
+
+## Default Build Output Location
+
+The build artifacts go into the **`.next`** directory by default:
+
+```
+my-nextjs-app/
+├── .next/              ← Build output here
+│   ├── cache/
+│   ├── server/         ← Server-side code
+│   ├── static/         ← Static assets
+│   └── standalone/     ← (if output: 'standalone')
+├── public/
+├── src/
+├── package.json
+└── next.config.js
+```
+
+### Key Directories Inside `.next`:
+
+```
+.next/
+├── server/
+│   ├── app/            ← App Router pages (if using)
+│   ├── pages/          ← Pages Router (if using)
+│   └── chunks/         ← Server-side code chunks
+│
+└── static/
+    ├── chunks/         ← Client-side JS bundles
+    ├── css/            ← Compiled CSS
+    └── media/          ← Optimized images/fonts
+```
+
+## Running the Built App
+
+After building, start the production server:
+
+```bash
+npm run start
+```
+
+This serves your app from the `.next` directory.
+
+## Flutter Comparison
+
+Coming from Flutter, here's a quick analogy:
+
+```
+Flutter                    Next.js
+─────────────────────────────────────────
+flutter build web      →  npm run build
+build/web/            →  .next/
+flutter run --release →  npm run start
+```
+
+**Key difference**: Unlike Flutter's `build/` folder which you can deploy directly to static hosting, Next.js's `.next/` folder typically requires a Node.js server (unless you're using static export).
