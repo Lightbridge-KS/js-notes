@@ -1,0 +1,167 @@
+# JavaScript Package Managers Compared
+
+## Overview
+
+### What They All Do
+
+All four tools manage your JavaScript dependencies - they install, update, and remove packages from the npm registry (the central repository of JavaScript packages).
+
+### Visual Comparison
+
+```
+Project Dependencies Tree:
+
+your-app
+├── react (16MB)
+│   └── prop-types (1MB)
+├── lodash (5MB)
+└── axios (2MB)
+    └── follow-redirects (500KB)
+```
+
+#### How Each Manager Stores Packages:
+
+```
+NPM (Node Package Manager)
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+node_modules/
+├── react/         [16MB]
+├── prop-types/    [1MB]
+├── lodash/        [5MB]
+├── axios/         [2MB]
+└── follow-redirects/ [500KB]
+
+Total: ~24.5MB per project
+Multiple projects = Duplicated storage
+```
+
+```
+PNPM (Performant NPM)
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+~/.pnpm-store/          [Global Cache]
+├── react@18.0.0/
+├── lodash@4.17.21/
+└── ...
+
+node_modules/           [Symlinks]
+├── react/     ──────►  ~/.pnpm-store/react
+├── lodash/    ──────►  ~/.pnpm-store/lodash
+└── ...
+
+Total: ~24.5MB ONCE (shared across all projects)
+```
+
+```
+YARN (Classic & Berry)
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Similar to npm but with:
+- Better caching
+- Workspaces support
+- Yarn 2+ (Berry): Plug'n'Play (PnP)
+
+.yarn/cache/            [Compressed cache]
+├── react-npm-18.0.0.zip
+└── lodash-npm-4.17.21.zip
+```
+
+```
+BUN
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+~/.bun/install/cache/   [Global Cache]
+
+node_modules/
+└── [Symlinks to cache]
+
++ Built-in runtime (like Node.js)
++ Written in Zig (ultra-fast)
+```
+
+### Key Differences Table
+
+| Feature | npm | pnpm | yarn | bun |
+|---------|-----|------|------|-----|
+| **Speed** | Baseline | 2-3x faster | 2x faster | **5-10x faster** |
+| **Disk Space** | Most | **Least** | Moderate | Least |
+| **Default in Node.js** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| **Compatibility** | 100% | 99% | 95% | 90% |
+| **Maturity** | Most mature | Mature | Very mature | **Newest** |
+| **Install** | Built-in | `npm i -g pnpm` | `npm i -g yarn` | Separate install |
+
+### Speed Comparison (Installing React App)
+
+```
+Time to install create-react-app dependencies:
+
+npm   ████████████████████████  ~45s
+yarn  ████████████████          ~30s
+pnpm  ████████████              ~20s
+bun   ████                      ~8s
+```
+
+### When to Use Each
+
+#### **npm** - The Default Choice
+```
+✅ Use when:
+- You're just starting (it comes with Node.js)
+- Following tutorials (most use npm)
+- Maximum compatibility needed
+- Working in teams unfamiliar with alternatives
+
+⚠️ Slower and uses more disk space
+```
+
+#### **pnpm** - The Efficient Choice
+```
+✅ Use when:
+- Working on multiple projects
+- Disk space is a concern
+- Want speed without sacrificing compatibility
+- Like the symlink approach
+
+💡 Best balance of speed, space, and compatibility
+```
+
+#### **yarn** - The Team-Friendly Choice
+```
+✅ Use when:
+- Working in established teams (many use Yarn)
+- Need workspaces (monorepos)
+- Want deterministic installs
+- Company standard requires it
+
+📝 yarn.lock is different from package-lock.json
+```
+
+#### **bun** - The Cutting-Edge Choice
+```
+✅ Use when:
+- Personal projects
+- Want maximum speed
+- Exploring modern tools
+- Also want a fast JS runtime
+
+⚠️ Newer, less mature, occasional compatibility issues
+```
+
+### Installation Commands Comparison
+
+```bash
+# Installing a package
+npm install lodash
+pnpm add lodash
+yarn add lodash
+bun add lodash
+
+# Dev dependencies
+npm install --save-dev eslint
+pnpm add -D eslint
+yarn add --dev eslint
+bun add -d eslint
+
+# Global installation
+npm install -g typescript
+pnpm add -g typescript
+yarn global add typescript
+bun add -g typescript
+```
