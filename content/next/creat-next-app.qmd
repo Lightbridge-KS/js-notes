@@ -1,0 +1,96 @@
+# Create Next JS App
+
+I've just created a new Next JS app. Please explain what the "App Router", "Turbopack", and "customize the import alias" means. 
+
+```zsh
+(base) ➜  my_react npx create-next-app@latest
+Need to install the following packages:
+create-next-app@15.5.4
+Ok to proceed? (y) y
+
+✔ What is your project named? … next-app-test
+✔ Would you like to use TypeScript? … No / Yes
+✔ Which linter would you like to use? › ESLint
+✔ Would you like to use Tailwind CSS? … No / Yes
+✔ Would you like your code inside a `src/` directory? … No / Yes
+✔ Would you like to use App Router? (recommended) … No / Yes
+✔ Would you like to use Turbopack? (recommended) … No / Yes
+✔ Would you like to customize the import alias (`@/*` by default)? … No / Yes
+✔ What import alias would you like configured? … @/*
+```
+
+
+Great! Let me break down these three important concepts for you. Since you have solid programming experience, I'll explain them at a level that connects to concepts you might already know while diving into the specifics.
+
+## App Router
+
+The App Router is Next.js's newer routing system introduced in version 13. Think of it as a fundamental shift in how Next.js organizes and renders your application.
+
+In the traditional "Pages Router" (the old way), you created files in a `pages/` directory, and each file automatically became a route. For example, `pages/about.js` would create the `/about` route. This worked well but had limitations in terms of layouts, data fetching, and component organization.
+
+The App Router uses a `app/` directory instead, and it's built around React Server Components. Here's the key mental model:
+
+```
+app/
+├── layout.js          ← Root layout (wraps everything)
+├── page.js            ← Homepage (/)
+├── about/
+│   └── page.js        ← About page (/about)
+└── blog/
+    ├── layout.js      ← Blog layout (wraps all blog pages)
+    └── [slug]/
+        └── page.js    ← Dynamic blog post (/blog/some-post)
+```
+
+The important innovation here is that **folders define routes, not files**. Each folder can contain special files like `page.js` (for the actual page), `layout.js` (for shared UI around nested pages), `loading.js` (for loading states), and `error.js` (for error boundaries). This gives you much more granular control over how different parts of your app behave.
+
+The App Router also defaults to Server Components, meaning components render on the server by default unless you explicitly mark them as Client Components with `'use client'`. This is a significant paradigm shift if you're used to everything being client-side React. It's similar to how you might think about server-side rendering in traditional web frameworks, but with the ability to seamlessly mix server and client rendering.
+
+## Turbopack
+
+Turbopack is Next.js's new bundler, designed to replace Webpack (the traditional bundler that most React and Next.js apps use). Think of it as the engine that processes all your JavaScript, TypeScript, CSS, and other assets during development.
+
+The primary motivation for Turbopack is **speed**. It's written in Rust (rather than JavaScript) and uses an incremental computation architecture. Here's what that means practically:
+
+When you save a file during development, instead of rebundling your entire application, Turbopack only reprocesses the specific parts that changed. It maintains a dependency graph in memory and updates only the affected nodes. This is conceptually similar to how Git tracks changes rather than copying entire files, or how incremental compilation works in languages like Rust itself.
+
+```
+Traditional bundler:
+File changed → Rebuild everything → Update browser (slow)
+
+Turbopack:
+File changed → Rebuild only affected modules → Update browser (fast)
+```
+
+For your M3 Pro MacBook, you'll likely notice this speed difference most prominently when working on larger applications. The hot module replacement (HMR) becomes nearly instantaneous. Right now, Turbopack is stable for development mode, though production builds still use Webpack by default in Next.js.
+
+## Import Alias (`@/*`)
+
+The import alias is a convenience feature that simplifies how you import files in your project. Without it, you'd often write imports like this:
+
+```javascript
+import { Button } from '../../../components/ui/button'
+import { formatDate } from '../../../../utils/date'
+```
+
+Those relative paths with multiple `../` become tedious and error-prone, especially when you move files around. With the `@/*` alias configured, you can write:
+
+```javascript
+import { Button } from '@/components/ui/button'
+import { formatDate } from '@/utils/date'
+```
+
+The `@` symbol is mapped to your project root (or to the `src/` directory if you chose to use one). This is configured in your `tsconfig.json` or `jsconfig.json` file:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+This is purely a developer experience feature - it doesn't affect your final bundled code at all. It's similar to how Python uses absolute imports or how you might configure module resolution in other languages. You could customize this to use different symbols or multiple aliases (like `@components/*`, `@utils/*`, etc.), but `@/*` has become a community convention.
+

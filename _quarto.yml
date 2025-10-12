@@ -38,6 +38,9 @@ book:
     - part: Docusaurus
       chapters: 
         - "content/docusaurus/docu-version-system.qmd"
+    - part: Next JS
+      chapters: 
+        - "content/next/creat-next-app.qmd"
 
 
 format:
