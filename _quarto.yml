@@ -26,6 +26,7 @@ book:
       - "content/ts/ts-00-roadmap.qmd"
       - "content/ts/ts-01-getstarted.qmd"
       - "content/ts/ts-02-types-basic.qmd"
+      - "content/ts/ts-03-classes-cheatsheet.qmd"
     - part: Package
       chapters: 
         - "content/module/01-module-system.qmd"
