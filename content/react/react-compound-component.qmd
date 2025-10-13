@@ -1,0 +1,131 @@
+# React Compound Component
+
+I've seen react component with dot `<SomePrimitive.Something>`. Please explain what it is. 
+
+```js
+import { ThreadPrimitive } from "@assistant-ui/react";
+
+<ThreadPrimitive.Root>
+  <ThreadPrimitive.Viewport>
+    <ThreadPrimitive.Empty />
+    <ThreadPrimitive.Messages
+      components={{
+        EditComposer,
+        UserMessage, 
+        AssistantMessage,
+      }}
+    />
+    <ThreadPrimitive.ScrollToBottom />
+  </ThreadPrimitive.Viewport>
+  <ThreadPrimitive.Suggestion />
+  <ThreadPrimitive.If />
+</ThreadPrimitive.Root>
+```
+
+This is called the **compound component pattern** (or namespace components). Let me break it down for you.
+
+## What It Actually Is
+
+The dot notation `<ThreadPrimitive.Root>` is just **JavaScript object property access** in JSX. It's not special React syntax—it's regular JS!
+
+```js
+// This is just a JavaScript object:
+const ThreadPrimitive = {
+  Root: SomeComponent,
+  Viewport: AnotherComponent,
+  Messages: YetAnotherComponent,
+  // ... etc
+}
+
+// So when you write:
+<ThreadPrimitive.Root />
+
+// You're really just accessing:
+ThreadPrimitive.Root  // which is a component
+```
+
+## Why Use This Pattern?
+
+It groups related components together under a single namespace. Think of it like **organizing widgets in Flutter packages**, but at the component level:
+
+```
+Flutter (similar concept):
+  MaterialApp
+    ├─ Scaffold.body
+    └─ Scaffold.appBar
+
+React Compound Components:
+  ThreadPrimitive
+    ├─ ThreadPrimitive.Root
+    ├─ ThreadPrimitive.Viewport
+    └─ ThreadPrimitive.Messages
+```
+
+## How It's Created
+
+Here's a simple example:
+
+```typescript
+// ============================================
+// Option 1: Direct object creation
+// ============================================
+const Card = {
+  Root: ({ children }) => <div className="card">{children}</div>,
+  Header: ({ children }) => <div className="card-header">{children}</div>,
+  Body: ({ children }) => <div className="card-body">{children}</div>,
+};
+
+// Usage:
+<Card.Root>
+  <Card.Header>Title</Card.Header>
+  <Card.Body>Content</Card.Body>
+</Card.Root>
+
+
+// ============================================
+// Option 2: Attaching to main component (more common)
+// ============================================
+function Card({ children }) {
+  return <div className="card">{children}</div>;
+}
+
+Card.Header = ({ children }) => <div className="card-header">{children}</div>;
+Card.Body = ({ children }) => <div className="card-body">{children}</div>;
+
+// Usage is the same:
+<Card>
+  <Card.Header>Title</Card.Header>
+  <Card.Body>Content</Card.Body>
+</Card>
+```
+
+## Benefits
+
+1. **Clear relationship** - You instantly know `ThreadPrimitive.Root` is part of the `ThreadPrimitive` family
+2. **Better autocomplete** - Type `ThreadPrimitive.` and your IDE shows all available components
+3. **Cleaner imports** - Import once, get all related components:
+
+```js
+// Instead of:
+import { ThreadRoot, ThreadViewport, ThreadMessages } from "...";
+
+// You get:
+import { ThreadPrimitive } from "...";
+// Then use: ThreadPrimitive.Root, ThreadPrimitive.Viewport, etc.
+```
+
+4. **Prevents naming collisions** - Many libraries might have a "Root" component, but `ThreadPrimitive.Root` is unique
+
+## Connection to Your Flutter Experience
+
+If you've used Flutter, this might feel familiar to how some widgets organize their constructors:
+
+```dart
+// Flutter
+AppBar.medium(...)
+TextField.borderless(...)
+
+// React compound components
+<Card.Root>
+<Card.Header>
+```
