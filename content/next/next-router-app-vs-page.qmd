@@ -1,0 +1,228 @@
+# Page Router vs App Router in Next.js
+
+**Historical Context**
+
+- **Page Router**: The original routing system (Next.js 1.0 - 12)
+- **App Router**: The new system introduced in Next.js 13 (stable in 13.4)
+
+## **Page Router (pages/)**
+
+The Page Router uses file-system based routing in the `pages/` directory:
+
+```
+pages/
+├── index.js           → /
+├── about.js           → /about
+├── blog/
+│   ├── index.js       → /blog
+│   └── [slug].js      → /blog/:slug
+└── api/
+    └── hello.js       → /api/hello
+```
+
+### Key Characteristics:
+```javascript
+// pages/about.js
+export default function AboutPage({ data }) {
+  return <div>About Us: {data.title}</div>
+}
+
+// Data fetching methods (run on server)
+export async function getServerSideProps() {
+  // Runs on each request
+  return { props: { data: await fetchData() } }
+}
+
+// OR
+export async function getStaticProps() {
+  // Runs at build time
+  return { props: { data: await fetchData() } }
+}
+```
+
+## **App Router (app/)**
+
+The App Router uses a more powerful file-system in the `app/` directory:
+
+```
+app/
+├── layout.js          → Root layout (wraps all pages)
+├── page.js            → /
+├── about/
+│   └── page.js        → /about
+├── blog/
+│   ├── layout.js      → Blog section layout
+│   ├── page.js        → /blog
+│   └── [slug]/
+│       └── page.js    → /blog/:slug
+└── api/
+    └── hello/
+        └── route.js   → /api/hello
+```
+
+### Key Characteristics:
+```javascript
+// app/about/page.js - Server Component by default
+async function AboutPage() {
+  // Can fetch data directly in component
+  const data = await fetchData()
+  return <div>About Us: {data.title}</div>
+}
+
+export default AboutPage
+```
+
+## **Visual Comparison**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Page Router                          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│   Client ──request──> Server                           │
+│                         │                              │
+│                         ├─> getServerSideProps()       │
+│                         │   OR getStaticProps()        │
+│                         │                              │
+│                         └─> Component + Props          │
+│                              │                         │
+│   Client <──HTML/JSON────────┘                         │
+│                                                         │
+│   ● Everything is client-side by default               │
+│   ● Explicit server-side data fetching                 │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                    App Router                           │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│   Client ──request──> Server                           │
+│                         │                              │
+│                         ├─> Server Components (default)│
+│                         │   ├─> Fetch data directly    │
+│                         │   └─> Render on server       │
+│                         │                              │
+│                         └─> Stream HTML                │
+│                              │                         │
+│   Client <──Streamed HTML───┘                          │
+│                                                         │
+│   ● Everything is server-side by default               │
+│   ● Opt-in to client with 'use client'                │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+## **Key Differences**
+
+| Feature | Page Router | App Router |
+|---------|------------|------------|
+| **Default Behavior** | Client Components | Server Components |
+| **Data Fetching** | `getServerSideProps`, `getStaticProps` | Direct async/await in components |
+| **Layouts** | `_app.js`, `_document.js` | Nested `layout.js` files |
+| **Loading States** | Manual implementation | Built-in `loading.js` |
+| **Error Handling** | `_error.js` | `error.js` boundaries |
+| **Streaming** | Not supported | Native support |
+| **Bundle Size** | Larger (all client) | Smaller (server components) |
+
+## **When to Use Each?**
+
+### **Use Page Router when:**
+- Working with existing Page Router projects
+- Need stable, battle-tested patterns
+- Team is familiar with traditional React patterns
+- Using libraries not yet compatible with App Router
+
+### **Use App Router when:**
+- Starting new projects (recommended by Next.js team)
+- Need better performance with Server Components
+- Want built-in loading/error states
+- Need nested layouts (think Flutter's nested navigation)
+- Want to reduce client-side JavaScript
+
+## **Practical Example - Blog with Both Routers**
+
+### Page Router Structure:
+```javascript
+// pages/blog/[id].js
+import { useState } from 'react'
+
+export default function BlogPost({ post }) {
+  const [likes, setLikes] = useState(0)
+  
+  return (
+    <div>
+      <h1>{post.title}</h1>
+      <button onClick={() => setLikes(likes + 1)}>
+        Likes: {likes}
+      </button>
+    </div>
+  )
+}
+
+export async function getStaticProps({ params }) {
+  const post = await fetch(`/api/posts/${params.id}`)
+  return { props: { post } }
+}
+```
+
+### App Router Structure:
+```javascript
+// app/blog/[id]/page.js - Server Component
+async function BlogPost({ params }) {
+  const post = await fetch(`/api/posts/${params.id}`)
+  
+  return (
+    <div>
+      <h1>{post.title}</h1>
+      <LikeButton />  {/* Client Component */}
+    </div>
+  )
+}
+
+// app/blog/[id]/LikeButton.js - Client Component
+'use client'
+import { useState } from 'react'
+
+export function LikeButton() {
+  const [likes, setLikes] = useState(0)
+  return (
+    <button onClick={() => setLikes(likes + 1)}>
+      Likes: {likes}
+    </button>
+  )
+}
+```
+
+## **Migration Path**
+
+You can use both routers in the same project during migration:
+```
+my-app/
+├── pages/          # Old routes
+│   └── old-page.js
+├── app/            # New routes
+│   └── new-page/
+│       └── page.js
+└── next.config.js
+```
+
+## **Quick Decision Framework**
+
+```
+Start New Project?
+    │
+    ├─Yes─> Use App Router
+    │
+    └─No──> Existing Page Router?
+            │
+            ├─Yes─> Consider gradual migration
+            │
+            └─No──> Complex client state?
+                    │
+                    ├─Yes─> Page Router might be simpler
+                    │
+                    └─No──> App Router for performance
+```
+
+Coming from Flutter, think of App Router's Server Components like widgets that run on the server and send HTML, while Client Components are like StatefulWidgets that run in the browser. The App Router's nested layouts are similar to Flutter's Navigator 2.0 with nested navigation.

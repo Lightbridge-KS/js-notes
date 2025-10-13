@@ -46,6 +46,7 @@ book:
       chapters: 
         - "content/next/creat-next-app.qmd"
         - "content/next/next-architecture.qmd"
+        - "content/next/next-router-app-vs-page.qmd"
         - "content/next/next-build.qmd"
         - "content/next/next-build-static-vs-ssr.qmd"
 
