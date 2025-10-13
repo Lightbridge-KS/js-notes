@@ -1,0 +1,449 @@
+# Abstract Classes vs Interfaces vs Type Aliases in TS
+
+Coming from Dart, this is a crucial distinction! Dart only has abstract classes (no `interface` keyword), but TypeScript has all three with different purposes.
+
+## Overview Comparison
+
+```
+┌─────────────────┬────────────────┬─────────────────┬──────────────────┐
+│                 │ Abstract Class │    Interface    │   Type Alias     │
+├─────────────────┼────────────────┼─────────────────┼──────────────────┤
+│ Implementation  │       ✅       │       ❌        │        ❌        │
+│ Constructor     │       ✅       │       ❌        │        ❌        │
+│ Instance        │  ❌ (partial)  │       ❌        │        ❌        │
+│ Multiple        │       ❌       │       ✅        │        ✅        │
+│ Extend/Merge    │    extends     │  extends/merge  │   intersection   │
+│ Runtime         │       ✅       │       ❌        │        ❌        │
+└─────────────────┴────────────────┴─────────────────┴──────────────────┘
+```
+
+## 1. Abstract Classes
+
+**What:** Blueprint classes with partial implementation that can't be instantiated directly.
+
+**Key Features:**
+- Can contain implementation details
+- Can have constructors
+- Exist at runtime (they compile to JavaScript)
+- Single inheritance only
+- Can have access modifiers (public, private, protected)
+
+```typescript
+// Abstract class with implementation
+abstract class Vehicle {
+  // Can have properties with values
+  protected fuel: number = 100;
+  
+  // Can have constructor
+  constructor(public brand: string) {}
+  
+  // Can have implemented methods
+  refuel(): void {
+    this.fuel = 100;
+    console.log("Refueled!");
+  }
+  
+  // Abstract methods (must be implemented)
+  abstract startEngine(): void;
+  abstract calculateRange(): number;
+}
+
+class Car extends Vehicle {
+  constructor(brand: string, private mpg: number) {
+    super(brand);
+  }
+  
+  startEngine(): void {
+    console.log(`${this.brand} engine started`);
+  }
+  
+  calculateRange(): number {
+    return this.fuel * this.mpg;
+  }
+}
+
+// const vehicle = new Vehicle("Generic"); // ❌ Error! Can't instantiate
+const myCar = new Car("Toyota", 30); // ✅ OK
+```
+
+## 2. Interfaces
+
+**What:** Pure contract/shape definition with no implementation.
+
+**Key Features:**
+- Only defines structure (no implementation)
+- Can be implemented by multiple classes
+- Can extend multiple interfaces
+- Don't exist at runtime (completely removed after compilation)
+- Can be merged (declaration merging)
+
+```typescript
+// Interface - pure structure
+interface Drivable {
+  speed: number;
+  drive(): void;
+}
+
+interface Flyable {
+  altitude: number;
+  fly(): void;
+}
+
+interface GPSEnabled {
+  coordinates: { lat: number; lng: number };
+  getLocation(): void;
+}
+
+// Class can implement multiple interfaces
+class FlyingCar implements Drivable, Flyable, GPSEnabled {
+  speed = 0;
+  altitude = 0;
+  coordinates = { lat: 0, lng: 0 };
+  
+  drive(): void {
+    this.speed = 60;
+  }
+  
+  fly(): void {
+    this.altitude = 1000;
+  }
+  
+  getLocation(): void {
+    console.log(`Location: ${this.coordinates.lat}, ${this.coordinates.lng}`);
+  }
+}
+
+// Interface extension (can extend multiple)
+interface ElectricVehicle extends Drivable, GPSEnabled {
+  batteryLevel: number;
+  charge(): void;
+}
+
+// Declaration merging (unique to interfaces!)
+interface User {
+  name: string;
+}
+
+interface User {
+  age: number;  // Merged with above
+}
+
+// Now User has both name and age
+const user: User = { name: "Alice", age: 30 };
+```
+
+## 3. Type Aliases
+
+**What:** Creates a new name for any type (primitives, unions, intersections, objects, etc.)
+
+**Key Features:**
+- Most flexible - can represent any type
+- Can create union and intersection types
+- Can't be merged (no declaration merging)
+- Great for complex type compositions
+- Don't exist at runtime
+
+```typescript
+// Type alias for object (similar to interface)
+type Point = {
+  x: number;
+  y: number;
+};
+
+// Union types (can't do with interfaces!)
+type Status = "pending" | "approved" | "rejected";
+type ID = string | number;
+
+// Intersection types
+type Timestamped = {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type Person = {
+  name: string;
+  age: number;
+};
+
+type TimestampedPerson = Person & Timestamped;
+
+// Complex type compositions
+type Response<T> = 
+  | { success: true; data: T }
+  | { success: false; error: string };
+
+// Tuple types
+type Coordinate = [number, number, number?]; // x, y, z(optional)
+
+// Function types
+type Callback<T> = (data: T) => void;
+type Predicate<T> = (item: T) => boolean;
+
+// Utility type combinations
+type ReadonlyPartial<T> = Readonly<Partial<T>>;
+
+// Conditional types (advanced)
+type IsArray<T> = T extends any[] ? true : false;
+```
+
+## When to Use Each?
+
+### Use **Abstract Classes** when:
+```typescript
+// 1. You need shared implementation
+abstract class BaseRepository<T> {
+  protected items: T[] = [];
+  
+  // Shared implementation
+  findAll(): T[] {
+    return this.items;
+  }
+  
+  count(): number {
+    return this.items.length;
+  }
+  
+  // Force subclasses to implement
+  abstract save(item: T): void;
+  abstract delete(id: string): void;
+}
+
+// 2. You need constructor logic
+abstract class BaseService {
+  protected logger: Logger;
+  
+  constructor(protected apiUrl: string) {
+    this.logger = new Logger(this.constructor.name);
+  }
+}
+
+// 3. You want "is-a" relationship with shared behavior
+abstract class Animal {
+  constructor(protected name: string) {}
+  
+  sleep(): void {
+    console.log(`${this.name} is sleeping`);
+  }
+  
+  abstract makeSound(): void;
+}
+```
+
+### Use **Interfaces** when:
+```typescript
+// 1. Defining contracts for classes
+interface PaymentProcessor {
+  processPayment(amount: number): Promise<boolean>;
+  refund(transactionId: string): Promise<boolean>;
+}
+
+class StripeProcessor implements PaymentProcessor {
+  async processPayment(amount: number): Promise<boolean> {
+    // Stripe-specific implementation
+    return true;
+  }
+  
+  async refund(transactionId: string): Promise<boolean> {
+    // Stripe-specific refund
+    return true;
+  }
+}
+
+// 2. Describing shape of objects
+interface ApiResponse {
+  status: number;
+  data: any;
+  timestamp: Date;
+}
+
+// 3. Multiple inheritance scenarios
+interface Serializable {
+  serialize(): string;
+}
+
+interface Cacheable {
+  getCacheKey(): string;
+  ttl: number;
+}
+
+class User implements Serializable, Cacheable {
+  constructor(public id: string, public name: string) {}
+  
+  serialize(): string {
+    return JSON.stringify({ id: this.id, name: this.name });
+  }
+  
+  getCacheKey(): string {
+    return `user_${this.id}`;
+  }
+  
+  ttl = 3600;
+}
+```
+
+### Use **Type Aliases** when:
+```typescript
+// 1. Creating union types
+type Result<T> = T | Error;
+type Theme = "light" | "dark" | "auto";
+
+// 2. Complex type manipulation
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+// 3. Function signatures
+type EventHandler<T> = (event: T) => void | Promise<void>;
+
+// 4. Tuples and arrays
+type RGB = [red: number, green: number, blue: number];
+type Matrix = number[][];
+
+// 5. Combining existing types
+type UserProfile = User & {
+  preferences: Preferences;
+  stats: Statistics;
+};
+```
+
+## Decision Tree
+
+```
+                     Need to define a type?
+                            │
+                ┌───────────┴───────────┐
+                │                       │
+              Need                   Just type
+          implementation?            structure
+                │                       │
+               YES                      NO
+                │                       │
+         Abstract Class                 │
+                               ┌────────┴────────┐
+                               │                 │
+                        For class?          Complex type?
+                               │            (union/tuple)
+                               │                 │
+                            Interface         Type Alias
+                               │
+                        ┌──────┴──────┐
+                        │             │
+                   Need merge?   Need union?
+                        │             │
+                   Interface     Type Alias
+```
+
+## Practical Example: Real-world Scenario
+
+Let's build a notification system to see all three in action:
+
+```typescript
+// 1. Type Alias for union types
+type NotificationType = "email" | "sms" | "push" | "in-app";
+type Priority = "low" | "medium" | "high" | "urgent";
+
+// 2. Interface for data structure
+interface Notification {
+  id: string;
+  type: NotificationType;
+  priority: Priority;
+  recipient: string;
+  subject: string;
+  body: string;
+  metadata?: Record<string, any>;
+}
+
+// 3. Interface for service contract
+interface NotificationSender {
+  send(notification: Notification): Promise<boolean>;
+  validateRecipient(recipient: string): boolean;
+}
+
+// 4. Abstract class for shared implementation
+abstract class BaseNotificationService implements NotificationSender {
+  protected queue: Notification[] = [];
+  
+  // Shared implementation
+  protected log(message: string): void {
+    console.log(`[${new Date().toISOString()}] ${message}`);
+  }
+  
+  protected addToQueue(notification: Notification): void {
+    this.queue.push(notification);
+  }
+  
+  // Must be implemented by subclasses
+  abstract send(notification: Notification): Promise<boolean>;
+  abstract validateRecipient(recipient: string): boolean;
+}
+
+// 5. Concrete implementations
+class EmailService extends BaseNotificationService {
+  async send(notification: Notification): Promise<boolean> {
+    this.log(`Sending email to ${notification.recipient}`);
+    // Email-specific logic
+    return true;
+  }
+  
+  validateRecipient(recipient: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient);
+  }
+}
+
+class SMSService extends BaseNotificationService {
+  async send(notification: Notification): Promise<boolean> {
+    this.log(`Sending SMS to ${notification.recipient}`);
+    // SMS-specific logic
+    return true;
+  }
+  
+  validateRecipient(recipient: string): boolean {
+    return /^\+?[1-9]\d{1,14}$/.test(recipient);
+  }
+}
+
+// 6. Type alias for complex return type
+type SendResult = {
+  success: boolean;
+  notification: Notification;
+  timestamp: Date;
+  error?: string;
+};
+
+// Usage
+const emailService = new EmailService();
+const notification: Notification = {
+  id: "123",
+  type: "email",
+  priority: "high",
+  recipient: "user@example.com",
+  subject: "Alert",
+  body: "Important message"
+};
+
+emailService.send(notification);
+```
+
+## Quick Reference
+
+| Use Case | Best Choice | Why |
+|----------|-------------|-----|
+| Shared code between classes | Abstract Class | Can include implementation |
+| Multiple inheritance | Interface | Classes can implement multiple |
+| Union types (`"a" \| "b"`) | Type Alias | Interfaces can't do unions |
+| Object shape for classes | Interface | Cleaner, supports declaration merging |
+| Function signatures | Type Alias | More flexible syntax |
+| Complex type manipulation | Type Alias | Supports conditionals, mappings |
+| API response types | Interface | Clear structure, extensible |
+| Enum-like values | Type Alias | Union of literal types |
+| Base class with helpers | Abstract Class | Shared utility methods |
+
+## Pro Tips
+
+1. **Start with interfaces** for object shapes - they're simpler and more extensible
+2. **Use type aliases** for unions, tuples, and complex type operations
+3. **Use abstract classes** sparingly - only when you truly need shared implementation
+4. **Prefer composition over inheritance** - use interfaces + composition
+5. **Don't over-abstract** - sometimes a simple interface is all you need
+
+The key insight: Interfaces and Type Aliases are purely compile-time (TypeScript only), while Abstract Classes actually exist in the compiled JavaScript. Choose based on whether you need runtime behavior or just type checking!
