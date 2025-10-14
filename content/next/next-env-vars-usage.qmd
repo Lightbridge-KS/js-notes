@@ -1,0 +1,188 @@
+# `.env.local` vs `.env.development`
+
+Great follow-up! This is a common point of confusion. Let me clarify the difference:
+
+## Key Difference
+
+```
+.env.local        → Overrides for YOUR machine (any environment)
+.env.development  → Shared config for ALL developers (dev mode only)
+```
+
+## Visual Flow
+
+```
+When you run: npm run dev
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  1. Load .env              (base, all envs)    │
+│  2. Load .env.development  (dev only, shared)  │
+│  3. Load .env.local        (YOUR overrides)    │
+│                                 ↑               │
+│                            highest priority     │
+└─────────────────────────────────────────────────┘
+
+When you run: npm run build && npm start
+┌─────────────────────────────────────────────────┐
+│                                                 │
+│  1. Load .env              (base, all envs)    │
+│  2. Load .env.production   (prod only, shared) │
+│  3. Load .env.local        (YOUR overrides)    │
+│                                 ↑               │
+│                            highest priority     │
+└─────────────────────────────────────────────────┘
+```
+
+## Practical Example: Team Project
+
+Imagine you're building a radiology AI app with your team:
+
+### `.env.development` (Committed to Git)
+```bash
+# Shared dev config - ALL team members use this
+NEXT_PUBLIC_API_URL=https://dev-api.hospital.com
+DATABASE_URL=postgresql://dev-db.hospital.com:5432/radiology
+LOG_LEVEL=debug
+```
+
+### `.env.local` (NOT committed, in .gitignore)
+```bash
+# Your personal overrides
+DATABASE_URL=postgresql://localhost:5432/radiology_local
+# ^ You run PostgreSQL locally, but teammate uses Docker
+
+OPENAI_API_KEY=sk-your-personal-key
+# ^ Each developer has their own API key
+```
+
+### Your Teammate's `.env.local`
+```bash
+# Their personal overrides
+DATABASE_URL=postgresql://localhost:5433/radiology_docker
+# ^ Different port because they use Docker
+
+OPENAI_API_KEY=sk-their-personal-key
+```
+
+## File Commit Strategy
+
+```
+Version Control (.git):
+├── .env.development       ✅ Committed (shared config)
+├── .env.production        ✅ Committed (shared config)
+├── .env.example           ✅ Committed (template)
+├── .env.local            ❌ .gitignored (personal)
+└── .env.*.local          ❌ .gitignored (personal)
+```
+
+## Complete Priority Chain
+
+```
+Priority (highest → lowest):
+───────────────────────────────────────────
+Development (npm run dev):
+  1. .env.development.local  ← rarely used
+  2. .env.local             ← YOUR secrets
+  3. .env.development       ← team config
+  4. .env                   ← base config
+
+Production (npm run build):
+  1. .env.production.local   ← rarely used
+  2. .env.local             ← YOUR secrets
+  3. .env.production        ← team config
+  4. .env                   ← base config
+
+Test (npm run test):
+  1. .env.test.local
+  2. .env.local (NOT loaded in test!)
+  3. .env.test
+  4. .env
+```
+
+**⚠️ Important**: `.env.local` is **NOT loaded** during `npm run test` - this is intentional to ensure consistent tests!
+
+## Real-World Scenario
+
+### Your Hospital's Setup:
+
+```
+Team Repository:
+├── .env.development          # Dev database, staging API
+├── .env.production          # Production database, prod API
+└── .env.example            # Template for new developers
+
+Your Machine:
+├── .env.local              # Your personal API keys, local DB
+└── (inherits .env.development when you run npm run dev)
+
+Production Server (Netlify/Vercel):
+└── Environment variables set in dashboard
+    (overrides .env.production if conflicts)
+```
+
+## Best Practices for Your Workflow
+
+### 1. Create `.env.example` (committed)
+```bash
+# .env.example - Template for new team members
+DATABASE_URL=postgresql://localhost:5432/radiology
+OPENAI_API_KEY=your_key_here
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+### 2. Setup Script
+```bash
+# When new developer joins
+cp .env.example .env.local
+# Then they fill in their personal values
+```
+
+### 3. Use `.env.development` for Shared Resources
+```bash
+# .env.development
+NEXT_PUBLIC_API_URL=https://staging-api.hospital.com
+NEXT_PUBLIC_ANALYTICS_ID=GA-STAGING-ID
+FEATURE_FLAG_NEW_UI=true  # All devs test new UI
+```
+
+### 4. Use `.env.local` for Personal Settings
+```bash
+# .env.local
+DATABASE_URL=postgresql://localhost:5432/my_local_db
+OPENAI_API_KEY=sk-my-personal-key
+SKIP_TYPE_CHECK=true  # You want faster builds
+```
+
+## Quick Decision Tree
+
+```
+Should I use .env.local or .env.development?
+                │
+                ├─ Is this a secret/personal credential?
+                │  └─ YES → .env.local ❌ DON'T COMMIT
+                │
+                ├─ Do all developers need the same value?
+                │  └─ YES → .env.development ✅ COMMIT
+                │
+                └─ Is it machine-specific (port, path)?
+                   └─ YES → .env.local ❌ DON'T COMMIT
+```
+
+## Common Mistake to Avoid
+
+```bash
+# ❌ Don't put secrets in .env.development
+# .env.development (COMMITTED TO GIT!)
+OPENAI_API_KEY=sk-real-key-exposed  # 🚨 DANGER!
+
+# ✅ Put secrets in .env.local
+# .env.local (GITIGNORED)
+OPENAI_API_KEY=sk-real-key-safe  # ✅ SAFE
+```
+
+---
+
+**TL;DR for Your Radiology Project:**
+- **`.env.development`** → Shared staging API URLs, feature flags (commit this)
+- **`.env.local`** → Your personal DB connection, API keys (never commit)
+

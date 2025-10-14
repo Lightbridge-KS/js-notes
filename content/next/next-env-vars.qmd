@@ -1,0 +1,175 @@
+# Environment Variables in Next.js
+
+
+### Basic Structure
+
+Next.js uses `.env*` files at your project root:
+
+```
+your-nextjs-project/
+├── .env.local          # Local overrides (gitignored)
+├── .env.development    # Development environment
+├── .env.production     # Production environment
+└── .env               # Default for all environments
+```
+
+**Loading Priority** (highest to lowest):
+```
+.env.local  →  .env.development/.env.production  →  .env
+```
+
+### Two Types of Variables
+
+#### A. Server-Side Only (Default)
+
+Variables are **private by default** - only accessible in Node.js environment:
+
+```bash
+# .env.local
+DATABASE_URL=postgresql://localhost:5432/mydb
+API_SECRET_KEY=super_secret_key
+```
+
+```typescript
+// pages/api/users.ts or app/api/users/route.ts
+export default function handler(req, res) {
+  const dbUrl = process.env.DATABASE_URL; // ✅ Works
+  // Never exposed to browser
+}
+```
+
+#### B. Browser-Exposed Variables
+
+Prefix with `NEXT_PUBLIC_` to expose to the browser:
+
+```bash
+# .env.local
+NEXT_PUBLIC_API_URL=https://api.example.com
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+```
+
+```typescript
+// components/Analytics.tsx (client component)
+'use client'
+
+export default function Analytics() {
+  const gaId = process.env.NEXT_PUBLIC_API_URL; // ✅ Works in browser
+  return <div>API: {gaId}</div>
+}
+```
+
+### Important Concepts
+
+#### Build-Time vs Runtime
+
+```
+Development:           Production:
+┌──────────────┐      ┌──────────────┐
+│ npm run dev  │      │ npm run build│
+│              │      │              │
+│ .env.local   │      │ .env.production
+│ loaded on    │      │ baked into   │
+│ every reload │      │ bundle       │
+└──────────────┘      └──────────────┘
+                           ↓
+                      ┌──────────────┐
+                      │ npm start    │
+                      │              │
+                      │ uses built   │
+                      │ bundle       │
+                      └──────────────┘
+```
+
+**Key Point**: In production, env vars are **baked into the bundle** at build time. To change them, you must rebuild!
+
+### TypeScript Type Safety
+
+Coming from Dart's strong typing, you'll appreciate this:
+
+```typescript
+// env.d.ts
+declare namespace NodeJS {
+  interface ProcessEnv {
+    DATABASE_URL: string;
+    NEXT_PUBLIC_API_URL: string;
+    NODE_ENV: 'development' | 'production' | 'test';
+  }
+}
+
+// Now you get autocomplete and type checking!
+const dbUrl: string = process.env.DATABASE_URL;
+```
+
+### Common Pitfalls (Watch Out!)
+
+#### ❌ Dynamic Access Won't Work
+
+```typescript
+// ❌ Won't work - Next.js can't statically analyze this
+const key = 'API_KEY';
+const value = process.env[key];
+
+// ✅ Works - direct access
+const value = process.env.API_KEY;
+```
+
+#### ❌ Client Component Secrets
+
+```typescript
+'use client'
+
+// ❌ This will be undefined in browser!
+const secret = process.env.DATABASE_URL;
+
+// ✅ This works - has NEXT_PUBLIC_ prefix
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+```
+
+### Practical Example
+
+```bash
+# .env.local
+DATABASE_URL=postgresql://localhost:5432/radiology_db
+OPENAI_API_KEY=sk-xxxxx
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+```typescript
+// app/api/analyze-image/route.ts (Server)
+export async function POST(req: Request) {
+  const db = process.env.DATABASE_URL;        // ✅ Server-side
+  const apiKey = process.env.OPENAI_API_KEY;  // ✅ Server-side
+  // Process medical image...
+}
+
+// components/UploadForm.tsx (Client)
+'use client'
+
+export default function UploadForm() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL; // ✅ Browser
+  
+  const handleUpload = async (file: File) => {
+    await fetch(`${appUrl}/api/analyze-image`, {
+      method: 'POST',
+      body: file
+    });
+  };
+}
+```
+
+### Comparison with Flutter
+
+| Aspect | Flutter/Dart | Next.js |
+|--------|--------------|---------|
+| **Config Files** | Multiple approaches (dart-define, json, packages) | Standard `.env*` files |
+| **Build-time** | `--dart-define` at compile | Baked into bundle |
+| **Public/Private** | Manual separation | Automatic with `NEXT_PUBLIC_` |
+| **Type Safety** | Built-in with Dart | Manual declaration needed |
+
+---
+
+**Quick Tips for Your Radiology AI Project:**
+- Store database credentials without `NEXT_PUBLIC_`
+- API endpoints that client needs → use `NEXT_PUBLIC_`
+- Always add `.env.local` to `.gitignore`
+- For deployment (Netlify/Vercel), set env vars in their dashboard
