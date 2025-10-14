@@ -1,5 +1,6 @@
 # Environment Variables in Next.js
 
+## Overview
 
 ### Basic Structure
 
@@ -173,3 +174,309 @@ export default function UploadForm() {
 - API endpoints that client needs → use `NEXT_PUBLIC_`
 - Always add `.env.local` to `.gitignore`
 - For deployment (Netlify/Vercel), set env vars in their dashboard
+
+
+## Env from CLI
+
+::: {.callout-note appearance="default" collapse="false"}
+**Q:** Can Next JS support defining build-time env vars from the CLI?
+:::
+
+
+Next.js supports this, though it works differently than Flutter's `--dart-define`. Let me show you the approaches:
+
+### Direct Inline Definition (Most Similar to `--dart-define`)
+
+```bash
+# Single variable
+NEXT_PUBLIC_API_URL=https://prod.api.com npm run build
+
+# Multiple variables
+DATABASE_URL=postgres://prod API_KEY=secret npm run build
+
+# Compare with Flutter:
+flutter build apk --dart-define=API_URL=https://api.com
+```
+
+**Full Example**
+
+```bash
+# Development build with custom API
+NEXT_PUBLIC_API_URL=https://dev-api.hospital.com \
+DATABASE_URL=postgresql://dev-db:5432/radiology \
+npm run dev
+
+# Production build with staging config
+NODE_ENV=production \
+NEXT_PUBLIC_API_URL=https://staging-api.hospital.com \
+OPENAI_API_KEY=sk-staging-key \
+npm run build
+```
+
+### Using `--env` Flag with `dotenv-cli` (More Organized)
+
+Install the package:
+```bash
+npm install --save-dev dotenv-cli
+```
+
+Create environment-specific files:
+```bash
+your-project/
+├── .env.staging
+├── .env.production
+└── .env.development
+```
+
+Update `package.json`:
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:staging": "dotenv -e .env.staging -- next build",
+    "build:prod": "dotenv -e .env.production -- next build",
+    "build:custom": "dotenv -e .env.custom -- next build"
+  }
+}
+```
+
+Usage:
+```bash
+npm run build:staging
+npm run build:prod
+
+# Or inline override:
+dotenv -e .env.staging -- npm run build
+```
+
+### Using `cross-env` (Cross-Platform Compatible)
+
+Great for your macOS + potential CI/CD on Linux:
+
+```bash
+npm install --save-dev cross-env
+```
+
+```json
+{
+  "scripts": {
+    "build:staging": "cross-env NEXT_PUBLIC_API_URL=https://staging.api.com npm run build",
+    "build:prod": "cross-env NEXT_PUBLIC_API_URL=https://prod.api.com npm run build",
+    "dev:mock": "cross-env NEXT_PUBLIC_USE_MOCK_DATA=true npm run dev"
+  }
+}
+```
+
+### Custom Build Script (Most Flexible)
+
+Similar to how you might use shell scripts with Flutter:
+
+```javascript
+// scripts/build.js
+const { execSync } = require('child_process');
+
+const configs = {
+  dev: {
+    NEXT_PUBLIC_API_URL: 'https://dev-api.hospital.com',
+    DATABASE_URL: 'postgresql://dev-db:5432/radiology'
+  },
+  staging: {
+    NEXT_PUBLIC_API_URL: 'https://staging-api.hospital.com',
+    DATABASE_URL: 'postgresql://staging-db:5432/radiology'
+  },
+  prod: {
+    NEXT_PUBLIC_API_URL: 'https://api.hospital.com',
+    DATABASE_URL: 'postgresql://prod-db:5432/radiology'
+  }
+};
+
+const env = process.argv[2] || 'dev';
+const config = configs[env];
+
+const envVars = Object.entries(config)
+  .map(([key, value]) => `${key}=${value}`)
+  .join(' ');
+
+execSync(`${envVars} npm run build`, { stdio: 'inherit' });
+```
+
+```json
+{
+  "scripts": {
+    "build:custom": "node scripts/build.js",
+    "build:dev": "node scripts/build.js dev",
+    "build:staging": "node scripts/build.js staging",
+    "build:prod": "node scripts/build.js prod"
+  }
+}
+```
+
+Usage:
+```bash
+npm run build:staging
+npm run build:prod
+```
+
+### Using `.env` Files with CLI Override
+
+The **hybrid approach** (most practical):
+
+```bash
+# .env.staging
+NEXT_PUBLIC_API_URL=https://staging-api.hospital.com
+DATABASE_URL=postgresql://staging-db:5432/radiology
+LOG_LEVEL=debug
+```
+
+```bash
+# Override specific variables from CLI
+# (CLI takes highest priority)
+NEXT_PUBLIC_API_URL=https://custom-api.com \
+npm run build
+
+# Or with dotenv-cli:
+dotenv -e .env.staging -- \
+  env NEXT_PUBLIC_API_URL=https://override.com \
+  npm run build
+```
+
+### Priority Chain with CLI
+
+```
+Environment Variable Priority:
+────────────────────────────────────────────────
+1. CLI inline variables          ← HIGHEST
+2. .env.local
+3. .env.development/.env.production
+4. .env                          ← LOWEST
+```
+
+Example:
+```bash
+# .env.production has:
+NEXT_PUBLIC_API_URL=https://prod.api.com
+
+# CLI override wins:
+NEXT_PUBLIC_API_URL=https://staging.api.com npm run build
+# → Uses https://staging.api.com ✅
+```
+
+### Real-World: CI/CD Pipeline
+
+For **GitHub Actions** (similar to AppVeyor you use):
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches: [main, staging]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build for Staging
+        if: github.ref == 'refs/heads/staging'
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.STAGING_API_URL }}
+          DATABASE_URL: ${{ secrets.STAGING_DB_URL }}
+        run: npm run build
+      
+      - name: Build for Production
+        if: github.ref == 'refs/heads/main'
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.PROD_API_URL }}
+          DATABASE_URL: ${{ secrets.PROD_DB_URL }}
+        run: npm run build
+```
+
+### Comparison: Flutter vs Next.js
+
+```
+Flutter (Dart):
+─────────────────────────────────────────────────
+flutter build apk \
+  --dart-define=API_URL=https://api.com \
+  --dart-define=API_KEY=secret
+
+Access in Dart:
+const apiUrl = String.fromEnvironment('API_URL');
+
+
+Next.js (JavaScript/TypeScript):
+─────────────────────────────────────────────────
+NEXT_PUBLIC_API_URL=https://api.com \
+API_KEY=secret \
+npm run build
+
+Access in TypeScript:
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiKey = process.env.API_KEY; // server-only
+```
+
+### Recommended Setup
+
+```json
+// package.json
+{
+  "scripts": {
+    "dev": "next dev",
+    "dev:local": "dotenv -e .env.local -- next dev",
+    "build": "next build",
+    "build:staging": "dotenv -e .env.staging -- next build",
+    "build:prod": "dotenv -e .env.production -- next build",
+    "deploy:netlify:staging": "npm run build:staging && netlify deploy",
+    "deploy:netlify:prod": "npm run build:prod && netlify deploy --prod"
+  }
+}
+```
+
+Project structure:
+```bash
+radiology-ai-app/
+├── .env.local              # Your local development
+├── .env.staging           # Staging environment
+├── .env.production        # Production environment
+├── .env.example           # Template (committed)
+├── scripts/
+│   └── build-with-env.js  # Custom build script if needed
+└── package.json
+```
+
+### Quick Commands Reference
+
+```bash
+# Development
+npm run dev
+NEXT_PUBLIC_API_URL=https://custom.com npm run dev
+
+# Build
+npm run build
+NODE_ENV=production npm run build
+
+# With multiple vars (macOS/Linux)
+NEXT_PUBLIC_API_URL=https://api.com \
+DATABASE_URL=postgresql://db:5432/rad \
+LOG_LEVEL=debug \
+npm run build
+
+# With dotenv-cli
+dotenv -e .env.staging -- npm run build
+
+# With cross-env (Windows-compatible)
+cross-env NEXT_PUBLIC_API_URL=https://api.com npm run build
+```
+
+---
+
+**TL;DR:**
+- ✅ Yes, Next.js supports CLI env vars like `--dart-define`
+- Use inline: `VAR=value npm run build`
+- For organization: Use `dotenv-cli` or custom scripts
+- CLI variables have **highest priority**, overriding `.env` files
+
