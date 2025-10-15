@@ -1,0 +1,166 @@
+# Creating Custom Hooks
+
+Custom hooks are just **regular functions** that use other hooks inside them. Think of them like extracting reusable logic into utility functions, but for stateful logic.
+
+## The Pattern
+
+Custom Hook Naming Convention:
+
+- Must start with "use"
+- Example: useCounter, useFetch, useLocalStorage
+
+## Example: `useCounter` Hook
+
+Let's build a reusable counter hook:
+
+```typescript
+// useCounter.ts
+import { useState } from 'react';
+
+function useCounter(initialValue: number = 0) {
+  const [count, setCount] = useState(initialValue);
+  
+  // Custom logic encapsulated
+  const increment = () => setCount(c => c + 1);
+  const decrement = () => setCount(c => c - 1);
+  const reset = () => setCount(initialValue);
+  
+  // Return whatever you want to expose
+  return {
+    count,
+    increment,
+    decrement,
+    reset
+  };
+}
+
+export default useCounter;
+```
+
+### Using the Custom Hook
+
+```typescript
+// CounterComponent.tsx
+import useCounter from './useCounter';
+
+function CounterComponent() {
+  // Use it like any other hook!
+  const { count, increment, decrement, reset } = useCounter(0);
+  
+  return (
+    <div>
+      <h2>Count: {count}</h2>
+      <button onClick={increment}>+</button>
+      <button onClick={decrement}>-</button>
+      <button onClick={reset}>Reset</button>
+    </div>
+  );
+}
+```
+
+## Flutter Analogy
+
+This is similar to creating a **mixin or a controller class** in Flutter:
+
+```
+Flutter Pattern:
+┌────────────────────────────────┐
+│ class CounterController {      │
+│   int count = 0;               │
+│   void increment() {...}       │
+│   void decrement() {...}       │
+│ }                              │
+└────────────────────────────────┘
+         ↓ Similar to ↓
+┌────────────────────────────────┐
+│ function useCounter() {        │
+│   const [count, setCount]...   │
+│   const increment = () => ...  │
+│   return { count, increment }  │
+│ }                              │
+└────────────────────────────────┘
+```
+
+## More Practical Example: `useLocalStorage`
+
+This hook persists state to localStorage (like Flutter's SharedPreferences):
+
+```typescript
+// useLocalStorage.ts
+import { useState, useEffect } from 'react';
+
+function useLocalStorage<T>(key: string, initialValue: T) {
+  // Get from localStorage or use initial value
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+  
+  // Update localStorage when value changes
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
+    } catch (error) {
+      console.error(error);
+    }
+  }, [key, storedValue]);
+  
+  return [storedValue, setStoredValue] as const;
+}
+
+export default useLocalStorage;
+```
+
+### Usage
+
+```typescript
+function UserProfile() {
+  // Persists automatically! 🎉
+  const [name, setName] = useLocalStorage('username', 'Guest');
+  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  
+  return (
+    <div>
+      <input 
+        value={name} 
+        onChange={(e) => setName(e.target.value)} 
+      />
+      <p>Theme: {theme}</p>
+    </div>
+  );
+}
+```
+
+## Structure of a Custom Hook
+
+```
+Anatomy of a Custom Hook:
+┌─────────────────────────────────────┐
+│ function useSomething() {           │
+│                                     │
+│   1. Use other hooks                │
+│      useState, useEffect, etc.      │
+│                                     │
+│   2. Add custom logic               │
+│      Helper functions, calculations │
+│                                     │
+│   3. Return values/functions        │
+│      Object or array                │
+│                                     │
+│ }                                   │
+└─────────────────────────────────────┘
+```
+
+## Key Points
+
+1. **Must follow hook rules** - Only call at top level, only in React functions
+2. **Name starts with "use"** - Convention that React relies on
+3. **Can use any hooks inside** - useState, useEffect, other custom hooks
+4. **Return anything** - Objects, arrays, single values
+5. **Reusable across components** - Share stateful logic
+

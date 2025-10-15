@@ -1,0 +1,140 @@
+# React Hooks
+
+## Basic
+
+### What Are Hooks?
+
+**React Hooks** are special functions that let you "hook into" React features like state and lifecycle methods in **functional components**. They were introduced in React 16.8 (2019) to solve a major limitation.
+
+#### The Problem They Solved
+
+Think of this analogy with Flutter:
+
+```
+Flutter (before Hooks equivalent):
+┌─────────────────────────────┐
+│ StatelessWidget             │  → No state, simple
+│ (like functional component) │
+└─────────────────────────────┘
+
+┌─────────────────────────────┐
+│ StatefulWidget              │  → Has state, lifecycle
+│ (like class component)      │     methods (initState, 
+└─────────────────────────────┘     dispose, etc.)
+```
+
+In React before Hooks:
+```
+┌──────────────────────────────┐
+│ Function Component           │  → Simple, no state ❌
+│ const MyComponent = () => {} │
+└──────────────────────────────┘
+
+┌──────────────────────────────┐
+│ Class Component              │  → Has state, lifecycle ✓
+│ class MyComponent extends    │     But verbose, complex
+│   React.Component {}         │
+└──────────────────────────────┘
+```
+
+**Hooks let you use state and other React features in function components!**
+
+### Core Hooks (The Essential Ones)
+
+#### 1. **useState** - Managing State
+
+Similar to Flutter's `setState()`:
+
+```typescript
+import { useState } from 'react';
+
+function Counter() {
+  // Declare state variable
+  const [count, setCount] = useState(0);
+  //     ↑       ↑            ↑
+  //   value  setter    initial value
+  
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+```
+
+**Flutter equivalent:**
+```dart
+class Counter extends StatefulWidget {
+  @override
+  _CounterState createState() => _CounterState();
+}
+
+class _CounterState extends State<Counter> {
+  int count = 0;  // State variable
+  
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: () => setState(() { count++; }),
+      child: Text('Count: $count'),
+    );
+  }
+}
+```
+
+#### 2. **useEffect** - Side Effects & Lifecycle
+
+Similar to Flutter's `initState`, `dispose`, and `didUpdateWidget`:
+
+```typescript
+import { useEffect } from 'react';
+
+function DataFetcher() {
+  const [data, setData] = useState(null);
+  
+  useEffect(() => {
+    // Runs after render (like initState)
+    fetchData().then(result => setData(result));
+    
+    // Cleanup function (like dispose)
+    return () => {
+      cancelFetch();
+    };
+  }, []);  // Empty array = run once on mount
+  //   ↑ Dependencies array
+}
+```
+
+**Dependency array controls when effect runs:**
+```
+useEffect(() => { ... }, [])        → Run once (mount only)
+useEffect(() => { ... }, [a, b])    → Run when a or b changes
+useEffect(() => { ... })            → Run after every render
+```
+
+**Flutter lifecycle equivalent:**
+```
+┌─────────────────────────────────────────┐
+│ React useEffect                         │
+├─────────────────────────────────────────┤
+│ useEffect(() => {                       │
+│   // mount logic                        │  ≈ initState()
+│   return () => { /* cleanup */ }        │  ≈ dispose()
+│ }, [dependency])                        │  ≈ didUpdateWidget()
+└─────────────────────────────────────────┘
+```
+
+### Why Hooks Are Great
+
+Coming from Flutter, you'll appreciate:
+
+1. **Less boilerplate** - No need for separate State classes
+2. **Reusable logic** - Create custom hooks (like extracting methods)
+3. **Composition** - Combine multiple hooks easily
+4. **Better than class lifecycle** - More intuitive than componentDidMount, componentDidUpdate, etc.
+
+### Key Rules
+
+1. **Only call hooks at the top level** (not in loops/conditions)
+2. **Only call hooks in React functions** (components or custom hooks)
+
