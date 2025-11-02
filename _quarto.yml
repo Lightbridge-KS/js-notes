@@ -53,6 +53,10 @@ book:
         - "content/next/next-build-static-vs-ssr.qmd"
         - "content/next/next-env-vars.qmd"
         - "content/next/next-env-vars-usage.qmd"
+    - part: Browser
+      chapters: 
+        - "content/storage/browser-storage.qmd"
+        - "content/storage/localForage-JS.qmd"
 
 
 format:
