@@ -28,8 +28,9 @@ book:
       - "content/ts/ts-02-types-basic.qmd"
       - "content/ts/ts-03-classes-cheatsheet.qmd"
       - "content/ts/ts-04-abs-interface-types.qmd"
-    - part: Package
+    - part: Package & Module
       chapters: 
+        - "content/module/00-mjs-cjs.qmd"
         - "content/module/01-module-system.qmd"
         - "content/module/02-index-js.qmd"
         - "content/module/03-path-alias.qmd"

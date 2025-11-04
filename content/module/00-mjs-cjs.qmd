@@ -1,0 +1,119 @@
+# CJS vs ESM
+
+
+::: {.callout-note appearance="default" collapse="false"}
+**Q:** What is the .cjs and .mjs file? Please explain.
+:::
+
+
+These file extensions are related to JavaScript's module system. Let me explain the modern JavaScript module landscape.
+
+
+## The Module System Context
+
+
+JavaScript has two main module systems that work differently:
+
+**CommonJS (CJS)** - The original Node.js module system that uses `require()` and `module.exports`. It loads modules synchronously.
+
+**ES Modules (ESM)** - The modern JavaScript standard that uses `import` and `export`. It's designed for both browsers and Node.js, with asynchronous loading support.
+
+
+## File Extensions Explained
+
+
+**`.cjs` - CommonJS Module**
+
+This explicitly tells Node.js to treat the file as a CommonJS module, regardless of other settings.
+
+```javascript
+// math.cjs
+function add(a, b) {
+  return a + b;
+}
+
+module.exports = { add };
+```
+
+**`.mjs` - ES Module**
+
+This explicitly tells Node.js to treat the file as an ES Module, regardless of other settings.
+
+```javascript
+// math.mjs
+export function add(a, b) {
+  return a + b;
+}
+```
+
+**`.js` - Depends on Context**
+
+The behavior of `.js` files depends on the nearest `package.json` file's `"type"` field:
+- If `"type": "module"` → treated as ESM
+- If `"type": "commonjs"` or no type field → treated as CommonJS
+
+
+## Why Do We Need These Extensions?
+
+
+Here's a diagram showing the decision tree:
+
+```
+                    Node.js encounters a .js file
+                              |
+                              |
+              ┌───────────────┴───────────────┐
+              |                               |
+        package.json                   No package.json
+        has "type"                     (or no "type" field)
+              |                               |
+      ┌───────┴───────┐                       |
+      |               |                       |
+"type": "module"  "type": "commonjs"     Defaults to
+      |               |                  CommonJS (CJS)
+      |               |                       |
+   Treat as        Treat as               Treat as
+   ESM (.mjs)      CJS (.cjs)            CJS (.cjs)
+```
+
+The explicit extensions (`.cjs` and `.mjs`) **override** this logic, giving you precise control per file.
+
+
+## Practical Example
+
+
+Let's say you have a project that's primarily ESM but needs one CommonJS file:
+
+```
+my-project/
+├── package.json        {"type": "module"}
+├── index.js           → Treated as ESM
+├── utils.js           → Treated as ESM
+└── legacy-plugin.cjs  → Forced to be CJS (override)
+```
+
+
+## When to Use Each
+
+
+Given your intermediate JavaScript experience, here's when you'd typically use each:
+
+**Use `.mjs`** when you want to use ES Modules in a project that defaults to CommonJS, or when you want to be explicit about using modern syntax.
+
+**Use `.cjs`** when you need CommonJS in a project that defaults to ESM, often for configuration files or when using older libraries that expect CommonJS.
+
+**Use `.js`** for most of your code and set the `"type"` field in `package.json` to match your preferred module system.
+
+
+## Modern Best Practice
+
+
+Since you're learning modern JavaScript, I recommend defaulting to ES Modules (`.mjs` behavior) for new projects. It's the standard going forward and works in both Node.js and browsers. You'd set this in your `package.json`:
+
+```json
+{
+  "type": "module"
+}
+```
+
+Then use `.js` for all your files, and they'll automatically be treated as ES Modules.
