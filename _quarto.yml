@@ -31,6 +31,7 @@ book:
     - part: Deno
       chapters: 
         - "content/deno/deno-test.ipynb"
+        - "content/deno/deno-modules.qmd"
     - part: Package & Module
       chapters: 
         - "content/module/00-mjs-cjs.qmd"
