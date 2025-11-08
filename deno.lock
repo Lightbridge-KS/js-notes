@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "remote": {
+    "https://deno.land/std@0.210.0/async/delay.ts": "d414b6ff5b597a3b8a90b1b860b675062a106ad0e311816256f4696aa40ec1a1"
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@quarto/netlify-plugin-quarto@^0.0.5"
+      ]
+    }
+  }
+}

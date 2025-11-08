@@ -28,6 +28,9 @@ book:
       - "content/ts/ts-02-types-basic.qmd"
       - "content/ts/ts-03-classes-cheatsheet.qmd"
       - "content/ts/ts-04-abs-interface-types.qmd"
+    - part: Deno
+      chapters: 
+        - "content/deno/deno-test.ipynb"
     - part: Package & Module
       chapters: 
         - "content/module/00-mjs-cjs.qmd"
